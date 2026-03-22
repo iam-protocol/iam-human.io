@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useConnection } from "@solana/wallet-adapter-react";
 import type { PulseSession } from "@iam-protocol/pulse-sdk";
@@ -38,61 +38,71 @@ export function VerifyWalletConnected({
   const pulse = usePulse();
   const touchRef = useRef<HTMLDivElement>(null);
   const sessionRef = useRef<PulseSession | null>(null);
+  const [audioLevel, setAudioLevel] = useState(0);
+  const [hasMotion, setHasMotion] = useState(false);
+  const voicedFramesRef = useRef(0);
+
+  useEffect(() => {
+    setHasMotion(navigator.maxTouchPoints > 0);
+  }, []);
 
   function handleStart() {
+    voicedFramesRef.current = 0;
+
     const session = pulse.createSession(touchRef.current ?? undefined);
     sessionRef.current = session;
-    dispatch({ type: "START_AUDIO" });
-    session.startAudio().catch(() => session.skipAudio());
+
+    session.startAudio((rms) => {
+      setAudioLevel(rms);
+      if (rms > 0.015) voicedFramesRef.current++;
+    }).catch(() => session.skipAudio());
+    session.startMotion().catch(() => session.skipMotion());
+    session.startTouch().catch(() => session.skipTouch());
+
+    dispatch({ type: "START_CAPTURE" });
   }
 
-  async function handleNext() {
+  async function handleCaptureComplete() {
     const session = sessionRef.current;
-    if (!session || state.step !== "capturing") return;
+    if (!session) return;
 
-    if (state.stage === "audio") {
-      try { await session.stopAudio(); } catch { /* skipped */ }
-      dispatch({ type: "NEXT_STAGE" });
-      session.startMotion().catch(() => session.skipMotion());
-    } else if (state.stage === "motion") {
-      try { await session.stopMotion(); } catch { /* skipped */ }
-      dispatch({ type: "NEXT_STAGE" });
-      session.startTouch().catch(() => session.skipTouch());
-    } else if (state.stage === "touch") {
-      try { await session.stopTouch(); } catch { /* skipped */ }
-      dispatch({ type: "CAPTURE_DONE" });
+    try { await session.stopAudio(); } catch { /* skipped */ }
+    try { await session.stopMotion(); } catch { /* skipped */ }
+    try { await session.stopTouch(); } catch { /* skipped */ }
 
-      setTimeout(() => {
-        dispatch({ type: "PROOF_COMPLETE" });
-      }, 2000);
+    dispatch({ type: "CAPTURE_DONE" });
 
-      session
-        .complete(wallet?.adapter, connection)
-        .then((result) => {
-          if (result.success) {
-            dispatch({
-              type: "VERIFICATION_SUCCESS",
-              commitment: commitmentToHex(result.commitment),
-              txSignature: result.txSignature,
-            });
-          } else {
-            dispatch({
-              type: "VERIFICATION_FAILED",
-              error: result.error ?? "Verification failed",
-            });
-          }
-        })
-        .catch((err: Error) => {
+    setTimeout(() => {
+      dispatch({ type: "PROOF_COMPLETE" });
+    }, 2000);
+
+    session
+      .complete(wallet?.adapter, connection)
+      .then((result) => {
+        if (result.success) {
+          dispatch({
+            type: "VERIFICATION_SUCCESS",
+            commitment: commitmentToHex(result.commitment),
+            txSignature: result.txSignature,
+          });
+        } else {
           dispatch({
             type: "VERIFICATION_FAILED",
-            error: err.message ?? "Unexpected error",
+            error: result.error ?? "Verification failed",
           });
+        }
+      })
+      .catch((err: Error) => {
+        dispatch({
+          type: "VERIFICATION_FAILED",
+          error: err.message ?? "Unexpected error",
         });
-    }
+      });
   }
 
   function handleReset() {
     sessionRef.current = null;
+    setAudioLevel(0);
     dispatch({ type: "RESET" });
   }
 
@@ -111,17 +121,41 @@ export function VerifyWalletConnected({
 
   if (state.step === "idle") {
     return (
-      <div className="text-center space-y-6">
-        <Wallet className="mx-auto h-10 w-10 text-muted" strokeWidth={1.5} />
-        <p className="text-foreground/70 max-w-md mx-auto">
-          Wallet connected. Complete the challenge, then sign the verification
-          transaction with your wallet.
-        </p>
+      <div className="space-y-6">
+        <div className="text-center">
+          <Wallet className="mx-auto h-10 w-10 text-muted mb-4" strokeWidth={1.5} />
+          <p className="font-mono text-base font-semibold text-foreground">
+            Behavioral Verification
+          </p>
+          <p className="mt-2 text-sm text-foreground/70 max-w-sm mx-auto">
+            Speak a phrase while tracing a shape. All sensors record
+            simultaneously for 12 seconds. Then sign with your wallet.
+          </p>
+        </div>
+        <div className={`grid gap-4 mx-auto max-w-sm ${hasMotion ? "grid-cols-3" : "grid-cols-2"}`}>
+          <div className="flex flex-col items-center gap-2 text-center">
+            <span className="text-cyan font-mono text-xl font-bold">1</span>
+            <span className="text-sm text-foreground/70">Speak the displayed phrase</span>
+          </div>
+          <div className="flex flex-col items-center gap-2 text-center">
+            <span className="text-solana-green font-mono text-xl font-bold">2</span>
+            <span className="text-sm text-foreground/70">Trace the curve on screen</span>
+          </div>
+          {hasMotion && (
+            <div className="flex flex-col items-center gap-2 text-center">
+              <span className="text-solana-purple font-mono text-xl font-bold">3</span>
+              <span className="text-sm text-foreground/70">Move naturally throughout</span>
+            </div>
+          )}
+        </div>
         <div className="flex justify-center">
           <ShimmerButton className="text-sm font-medium" onClick={handleStart}>
             Start Verification
           </ShimmerButton>
         </div>
+        <p className="text-center text-xs text-muted">
+          All data stays on your device. Only the ZK proof leaves.
+        </p>
       </div>
     );
   }
@@ -129,9 +163,10 @@ export function VerifyWalletConnected({
   if (state.step === "capturing") {
     return (
       <PulseChallenge
-        stage={state.stage}
-        onNext={handleNext}
+        onComplete={handleCaptureComplete}
         touchRef={touchRef}
+        audioLevel={audioLevel}
+        hasMotion={hasMotion}
       />
     );
   }
