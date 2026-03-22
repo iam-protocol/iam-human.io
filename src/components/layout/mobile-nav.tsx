@@ -3,9 +3,17 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Menu, X } from "lucide-react";
-import type { NavItem } from "@/data/types";
 
-export function MobileNav({ items }: { items: NavItem[] }) {
+const mobileItems = [
+  { label: "Technology", href: "/technology" },
+  { label: "Solutions", href: "/solutions" },
+  { label: "Integrate", href: "/integrate" },
+  { label: "Paper", href: "/paper" },
+  { label: "Verify", href: "/verify" },
+  { label: "Dashboard", href: "/dashboard" },
+];
+
+export function MobileNav() {
   const [open, setOpen] = useState(false);
 
   return (
@@ -21,7 +29,7 @@ export function MobileNav({ items }: { items: NavItem[] }) {
       {open && (
         <div className="absolute left-0 top-16 w-full border-b border-border bg-background/95 backdrop-blur-md">
           <ul className="flex flex-col gap-1 px-6 py-4">
-            {items.map((item) => (
+            {mobileItems.map((item) => (
               <li key={item.href}>
                 <Link
                   href={item.href}
