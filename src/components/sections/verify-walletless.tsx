@@ -42,21 +42,27 @@ export function VerifyWalletless({
     const session = pulse.createSession(touchRef.current ?? document.body);
     sessionRef.current = session;
 
-    // Request audio first (mandatory) — must complete before other permissions
+    // Audio is mandatory — must complete before other permissions
     // to avoid iOS gesture context collision with DeviceMotion permission dialog
-    await session.startAudio((rms) => {
-      setAudioLevel(rms);
-      if (rms > 0.015) voicedFramesRef.current++;
-    }).catch(() => session.skipAudio());
+    try {
+      let audioFrameCount = 0;
+      await session.startAudio((rms) => {
+        if (rms > 0.015) voicedFramesRef.current++;
+        audioFrameCount++;
+        if (audioFrameCount % 6 === 0) setAudioLevel(rms);
+      });
+    } catch {
+      dispatch({
+        type: "VERIFICATION_FAILED",
+        error: "Microphone access denied. Please allow microphone permission and try again.",
+      });
+      return;
+    }
 
-    session.startMotion().catch((e) => {
-      console.warn("[IAM] Motion start failed:", e?.message ?? e);
-      session.skipMotion();
-    });
-    session.startTouch().catch((e) => {
-      console.warn("[IAM] Touch start failed:", e?.message ?? e);
-      session.skipTouch();
-    });
+    // Motion permission must be awaited — on iOS the dialog blocks and capture
+    // time is lost if we proceed before the user approves.
+    try { await session.startMotion(); } catch { session.skipMotion(); }
+    session.startTouch().catch(() => session.skipTouch());
 
     dispatch({ type: "START_CAPTURE" });
   }
@@ -71,8 +77,13 @@ export function VerifyWalletless({
 
     dispatch({ type: "CAPTURE_DONE" });
 
-    session
-      .complete()
+    const PROOF_TIMEOUT_MS = 60_000;
+    const proofPromise = session.complete();
+    const timeoutPromise = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error("Proof generation timed out. Please try again.")), PROOF_TIMEOUT_MS)
+    );
+
+    Promise.race([proofPromise, timeoutPromise])
       .then((result) => {
         if (result.success) {
           dispatch({
@@ -97,6 +108,7 @@ export function VerifyWalletless({
 
   function handleReset() {
     sessionRef.current = null;
+    (touchRef as React.MutableRefObject<HTMLDivElement | null>).current = null;
     setAudioLevel(0);
     dispatch({ type: "RESET" });
   }
