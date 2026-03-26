@@ -1,13 +1,15 @@
-# IAM Protocol: Proof-of-Humanity through Temporal Biometric Consistency
+# IAM Protocol: A Framework for Temporally-Consistent, Decentralized Proof-of-Humanity
 
-**Version:** 3.0
-**Date:** March 25, 2026
+**Document Version:** 3.0 (Updated for Solana / ZK Self-Proof Architecture)
+**Original Date:** June 27, 2025
+**Updated:** March 26, 2026
+**Word Count:** Approx. 5000
 
 ---
 
 #### **Abstract**
 
-The proliferation of sophisticated AI and bot networks necessitates a robust method for verifying human uniqueness and liveness in digital ecosystems—a concept known as Proof-of-Humanity (PoH). Existing solutions often rely on centralized authorities, invasive static biometrics (e.g., iris scans), or socially-correlatable data, creating significant vulnerabilities in privacy, security, and accessibility. This paper introduces the IAM Protocol, a decentralized framework for PoH and Self-Sovereign Identity (SSI). Its core innovation is the concept of **temporal consistency**, asserting that a human's identity is best proven not by a single secret, but by the dynamic, chaotic, and continuous signature of their biological and behavioral patterns over time. The framework leverages a multi-modal "Liveness Interlock" to generate a **Temporal-Biometric Hash (TBH)**—a 256-bit fingerprint derived from voice prosody, hand tremor, and touch dynamics—which is then verified via a Groth16 zero-knowledge proof on Solana. The resulting attestations are anchored to an evolving, non-transferable identity token (the IAM Anchor), forming a private and secure Decentralized Identity (DID). This paper details the mathematical foundations of the TBH, the cryptographic architecture of the ZK verification mechanism, the game-theoretic incentives underpinning the system's security, and the application layer that brings its utility to the digital world.
+The proliferation of sophisticated AI and bot networks necessitates a robust method for verifying human uniqueness and liveness in digital ecosystems—a concept known as Proof-of-Humanity (PoH). Existing solutions often rely on centralized authorities, invasive static biometrics (e.g., iris scans), or socially-correlatable data, creating significant vulnerabilities in privacy, security, and accessibility. This paper introduces the IAM Protocol, a decentralized framework for PoH and Self-Sovereign Identity (SSI). Its core innovation is the concept of **temporal consistency**, asserting that a human's identity is best proven not by a single secret, but by the dynamic, chaotic, and continuous signature of their biological and behavioral patterns over time. The framework leverages a multi-modal "Liveness Interlock" to generate a **Temporal-Biometric Hash (TBH)**, a 256-bit fingerprint derived from voice prosody, hand tremor, and touch dynamics, which is then verified via a Groth16 zero-knowledge proof on Solana. The resulting attestations are anchored to an evolving, non-transferable identity token (the IAM Anchor), forming a private and secure Decentralized Identity (DID). This paper details the mathematical foundations of the TBH, the cryptographic architecture of the ZK verification mechanism, the game-theoretic incentives underpinning the system's security, and the application layer that brings its utility to the digital world.
 
 **Keywords:** *Proof-of-Humanity (PoH), Decentralized Identity (DID), Behavioral Biometrics, Zero-Knowledge Proofs, Groth16, SimHash, Liveness Detection, Temporal Consistency, Solana.*
 
