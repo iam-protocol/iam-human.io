@@ -34,6 +34,22 @@ export function Footer() {
           >
             GitHub
           </a>
+          <a
+            href="https://discord.gg/b3UrxXTF"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="transition-colors hover:text-foreground"
+          >
+            Discord
+          </a>
+          <a
+            href="https://x.com/iam_protocol_"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="transition-colors hover:text-foreground"
+          >
+            X / Twitter
+          </a>
         </div>
       </div>
     </footer>
