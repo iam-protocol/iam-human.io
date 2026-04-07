@@ -59,6 +59,12 @@ export function Navbar() {
             Dashboard
           </Link>
           <Link
+            href="/stats"
+            className="hidden md:inline-flex items-center rounded-full px-4 py-1.5 text-sm font-mono font-medium border border-white/15 bg-white/5 backdrop-blur-md text-foreground/60 hover:text-foreground hover:bg-white/10 transition-colors duration-200"
+          >
+            Stats
+          </Link>
+          <Link
             href="/verify"
             className="hidden md:inline-flex items-center rounded-full px-4 py-1.5 text-sm font-mono font-medium border border-border bg-surface/50 backdrop-blur-md text-cyan hover:text-foreground hover:bg-surface-hover transition-colors duration-200"
           >
