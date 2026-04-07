@@ -12,6 +12,7 @@ const mobileItems = [
   { label: "Paper", href: "/paper" },
   { label: "Verify", href: "/verify" },
   { label: "Dashboard", href: "/dashboard" },
+  { label: "Stats", href: "/stats" },
 ];
 
 export function MobileNav() {
