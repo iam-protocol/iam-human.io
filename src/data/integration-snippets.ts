@@ -56,10 +56,10 @@ import { useConnection } from '@solana/wallet-adapter-react';
 const { connection } = useConnection();
 
 try {
-  // result: { verified: boolean, commitment?: string }
-  const result = await verifyIAMAttestation(walletAddress, connection);
+  // attestation: { isHuman: boolean, trustScore: number, verifiedAt: number, mode: string, expired: boolean } | null
+  const attestation = await verifyIAMAttestation(walletAddress, connection);
 
-  if (!result.verified) {
+  if (!attestation || !attestation.isHuman || attestation.expired) {
     throw new Error("Access Denied: User is not verified.");
   }
 
@@ -72,16 +72,30 @@ try {
   {
     title: "Gate access on Trust Score",
     description: "Require a minimum trust score to interact with your protocol.",
-    code: `import { fetchIdentityState } from '@iam-protocol/pulse-sdk';
+    code: `import { PublicKey } from '@solana/web3.js';
+import { PROGRAM_IDS } from '@iam-protocol/pulse-sdk';
 
 async function checkTrustThreshold(walletAddress, connection, minScore = 50) {
   try {
-    // identity: { trustScore: number, ... }
-    const identity = await fetchIdentityState(walletAddress, connection);
+    const pubkey = new PublicKey(walletAddress);
+    const programId = new PublicKey(PROGRAM_IDS.iamAnchor);
+    const [identityPda] = PublicKey.findProgramAddressSync(
+      [new TextEncoder().encode("identity"), pubkey.toBuffer()],
+      programId
+    );
+
+    // Bypasses SDK IDL dependencies to avoid network timeout/cors issues
+    const account = await connection.getAccountInfo(identityPda);
     
-    if (!identity) throw new Error("No IAM Anchor found");
-    if (identity.trustScore < minScore) {
-      throw new Error(\`Trust score too low: \${identity.trustScore}\`);
+    if (!account || account.data.length < 62) {
+      throw new Error("No IAM Anchor found");
+    }
+
+    const view = new DataView(account.data.buffer, account.data.byteOffset, account.data.byteLength);
+    const trustScore = view.getUint16(60, true);
+    
+    if (trustScore < minScore) {
+      throw new Error(\`Trust score too low: \${trustScore}\`);
     }
     
     return true;
