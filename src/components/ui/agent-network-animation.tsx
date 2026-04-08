@@ -86,6 +86,12 @@ export function AgentNetworkAnimation({ className }: { className?: string }) {
     const startTime = performance.now();
     let prev = startTime;
 
+    // Read theme-aware cyan color from CSS variable
+    const rawCyan = getComputedStyle(document.documentElement).getPropertyValue("--color-cyan").trim();
+    const cyanRGB = rawCyan.startsWith("#")
+      ? `${parseInt(rawCyan.slice(1, 3), 16)}, ${parseInt(rawCyan.slice(3, 5), 16)}, ${parseInt(rawCyan.slice(5, 7), 16)}`
+      : "34, 211, 230";
+
     const positions = fibonacciSphere(NODE_COUNT);
     const edges = buildEdges(positions);
     const adj = buildAdjacency(edges, NODE_COUNT);
@@ -183,7 +189,7 @@ export function AgentNetworkAnimation({ className }: { className?: string }) {
         const pa = projected[a], pb = projected[b];
         const depth = (Math.min(pa.z, pb.z) + 1) / 2;
         const opacity = (0.1 + 0.15 * depth) * fadeIn;
-        html += `<line x1="${pa.x}" y1="${pa.y}" x2="${pb.x}" y2="${pb.y}" stroke="rgba(34,211,230,${opacity})" stroke-width="0.6"/>`;
+        html += `<line x1="${pa.x}" y1="${pa.y}" x2="${pb.x}" y2="${pb.y}" stroke="rgba(${cyanRGB},${opacity})" stroke-width="0.6"/>`;
       }
 
       // Signals
@@ -195,7 +201,7 @@ export function AgentNetworkAnimation({ className }: { className?: string }) {
         const sx = pa.x + (pb.x - pa.x) * progress;
         const sy = pa.y + (pb.y - pa.y) * progress;
         const so = (0.9 * (1 - progress)) * fadeIn;
-        html += `<circle cx="${sx}" cy="${sy}" r="${SIGNAL_R}" fill="rgba(34,211,230,${so})"/>`;
+        html += `<circle cx="${sx}" cy="${sy}" r="${SIGNAL_R}" fill="rgba(${cyanRGB},${so})"/>`;
       }
 
       // Nodes
@@ -207,9 +213,9 @@ export function AgentNetworkAnimation({ className }: { className?: string }) {
         const glow = e > 0.1 ? e * 0.4 : 0;
 
         if (glow > 0) {
-          html += `<circle cx="${x}" cy="${y}" r="${r * 2.5}" fill="rgba(34,211,230,${glow * 0.12 * fadeIn})" />`;
+          html += `<circle cx="${x}" cy="${y}" r="${r * 2.5}" fill="rgba(${cyanRGB},${glow * 0.12 * fadeIn})" />`;
         }
-        html += `<circle cx="${x}" cy="${y}" r="${r}" fill="rgba(34,211,230,${alpha})" />`;
+        html += `<circle cx="${x}" cy="${y}" r="${r}" fill="rgba(${cyanRGB},${alpha})" />`;
       }
 
       svg.innerHTML = html;
