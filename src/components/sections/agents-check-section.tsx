@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useConnection } from "@solana/wallet-adapter-react";
 import {
   getAgentHumanOperator,
@@ -8,7 +8,9 @@ import {
 } from "@iam-protocol/pulse-sdk";
 import { TextShimmer } from "@/components/ui/text-shimmer";
 import { GlowCard } from "@/components/ui/glow-card";
-import { Bot, CheckCircle, Loader2, Search } from "lucide-react";
+import { Bot, CheckCircle, ExternalLink, Loader2, Search } from "lucide-react";
+
+const TEST_AGENT = "m8b6ADwZUqL3JNazingq5VKJBmFeS8Rz1w487i4must";
 
 function formatTimestamp(unix: number): string {
   return new Date(unix * 1000).toLocaleDateString("en-US", {
@@ -27,31 +29,45 @@ export function AgentsCheckSection() {
   const [checked, setChecked] = useState(false);
   const [checking, setChecking] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const autoChecked = useRef(false);
+  const requestId = useRef(0);
 
-  async function handleCheck() {
-    if (!agentAsset.trim()) return;
+  async function runCheck(asset: string) {
+    if (!asset.trim()) return;
+    const thisRequest = ++requestId.current;
     setChecking(true);
     setError(null);
     setOperator(null);
     setChecked(false);
 
     try {
-      const result = await getAgentHumanOperator(agentAsset.trim(), connection);
+      const result = await getAgentHumanOperator(asset.trim(), connection);
+      if (requestId.current !== thisRequest) return;
       setOperator(result);
       setChecked(true);
     } catch {
+      if (requestId.current !== thisRequest) return;
       setError("Invalid asset address or network error.");
     } finally {
-      setChecking(false);
+      if (requestId.current === thisRequest) setChecking(false);
     }
   }
+
+  // Auto-check the test agent on mount so judges see a live result immediately
+  useEffect(() => {
+    if (autoChecked.current) return;
+    autoChecked.current = true;
+
+    setAgentAsset(TEST_AGENT);
+    runCheck(TEST_AGENT);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [connection]);
 
   return (
     <section className="mt-16">
       <TextShimmer
         as="span"
         className="font-mono text-base tracking-widest uppercase"
-        duration={3}
       >
         {"// CHECK AN AGENT"}
       </TextShimmer>
@@ -77,16 +93,17 @@ export function AgentsCheckSection() {
                 className="w-full bg-background border border-border rounded-lg px-4 py-3 text-sm font-mono text-foreground placeholder:text-foreground/30 focus:outline-none focus:border-cyan/50 transition-colors"
                 value={agentAsset}
                 onChange={(e) => {
+                  requestId.current++;
                   setAgentAsset(e.target.value);
                   setChecked(false);
                   setOperator(null);
                   setError(null);
                 }}
-                onKeyDown={(e) => e.key === "Enter" && handleCheck()}
+                onKeyDown={(e) => e.key === "Enter" && runCheck(agentAsset)}
               />
             </div>
             <button
-              onClick={handleCheck}
+              onClick={() => runCheck(agentAsset)}
               disabled={checking || !agentAsset.trim()}
               className="inline-flex items-center gap-2 rounded-lg border border-border bg-surface px-5 py-3 text-sm font-mono text-foreground transition-colors hover:border-cyan/50 hover:text-cyan disabled:opacity-50 disabled:cursor-not-allowed"
             >
@@ -118,23 +135,26 @@ export function AgentsCheckSection() {
 
           {operator && (
             <div className="mt-6 rounded-xl border border-solana-green/20 bg-solana-green/5 p-6">
-              <div className="flex items-center gap-3 mb-4">
+              <div className="flex items-center gap-3 mb-5">
                 <CheckCircle className="h-6 w-6 text-solana-green" />
                 <div>
                   <p className="text-sm font-medium text-foreground">
                     Verified Human Operator
                   </p>
                   <p className="text-xs text-muted mt-0.5">
-                    Immutable IAM attestation confirmed on-chain.
+                    Immutable on-chain attestation via{" "}
+                    <span className="text-cyan font-mono">
+                      iam:human-operator
+                    </span>
                   </p>
                 </div>
               </div>
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
                   <p className="text-xs font-mono uppercase tracking-widest text-muted">
                     Trust Score
                   </p>
-                  <p className="mt-1 text-2xl font-mono font-bold text-foreground">
+                  <p className="mt-1 text-3xl font-mono font-bold text-foreground">
                     {operator.trustScore}
                   </p>
                 </div>
@@ -158,9 +178,20 @@ export function AgentsCheckSection() {
                   <p className="text-xs font-mono uppercase tracking-widest text-muted">
                     IAM Anchor PDA
                   </p>
-                  <p className="mt-1 text-xs font-mono text-foreground/70 break-all">
-                    {operator.anchorPda}
-                  </p>
+                  <div className="mt-1 flex items-center gap-2">
+                    <p className="text-xs font-mono text-foreground/70 break-all">
+                      {operator.anchorPda}
+                    </p>
+                    <a
+                      href={`https://explorer.solana.com/address/${operator.anchorPda}?cluster=devnet`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="shrink-0 text-cyan hover:text-foreground transition-colors"
+                      title="View on Solana Explorer"
+                    >
+                      <ExternalLink className="h-3.5 w-3.5" />
+                    </a>
+                  </div>
                 </div>
               </div>
             </div>
@@ -172,15 +203,14 @@ export function AgentsCheckSection() {
         Try with:{" "}
         <button
           onClick={() => {
-            setAgentAsset("m8b6ADwZUqL3JNazingq5VKJBmFeS8Rz1w487i4must");
-            setChecked(false);
-            setOperator(null);
+            setAgentAsset(TEST_AGENT);
+            runCheck(TEST_AGENT);
           }}
           className="text-cyan hover:text-foreground transition-colors font-mono"
         >
           m8b6AD...4must
-        </button>
-        {" "}(IAM test agent on devnet)
+        </button>{" "}
+        (IAM test agent on devnet)
       </p>
     </section>
   );

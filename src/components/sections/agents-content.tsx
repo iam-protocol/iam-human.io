@@ -28,15 +28,14 @@ const steps = [
 
 export function AgentsContent() {
   return (
-    <div className="space-y-24">
-      {/* Hero section with animation */}
+    <div className="space-y-16">
+      {/* Problem section with animation */}
       <section className="relative">
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 items-center">
-          <div>
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 items-center">
+          <div className="lg:pr-4">
             <TextShimmer
               as="span"
               className="font-mono text-base tracking-widest uppercase"
-              duration={3}
             >
               {"// THE PROBLEM"}
             </TextShimmer>
@@ -52,40 +51,50 @@ export function AgentsContent() {
             </p>
           </div>
           <div className="flex justify-center lg:justify-end">
-            <AgentNetworkAnimation className="w-full max-w-[400px] h-auto opacity-80" />
+            <AgentNetworkAnimation className="w-full max-w-[460px] h-auto" />
           </div>
         </div>
       </section>
 
       {/* Solution */}
       <section>
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 items-center">
+        <div className="grid grid-cols-1 gap-10 lg:grid-cols-2 items-center">
           <div className="order-2 lg:order-1">
             <GlowCard>
-              <div className="space-y-4 text-center">
-                <p className="font-mono text-xs uppercase tracking-widest text-muted">
+              <div className="py-4">
+                <p className="font-mono text-sm uppercase tracking-widest text-muted text-center mb-8">
                   On-chain attestation
                 </p>
-                <div className="flex items-center justify-center gap-3">
-                  <div className="flex flex-col items-center gap-1">
-                    <div className="h-12 w-12 rounded-full border border-cyan/30 bg-cyan/10 flex items-center justify-center">
-                      <ShieldCheck className="h-5 w-5 text-cyan" />
-                    </div>
-                    <span className="text-xs font-mono text-muted">Human</span>
+
+                {/* Diagram: circles + connecting line */}
+                <div className="flex items-center px-4 sm:px-8">
+                  <div className="h-16 w-16 rounded-full border border-cyan/30 bg-cyan/10 flex items-center justify-center shrink-0">
+                    <ShieldCheck className="h-7 w-7 text-cyan" />
                   </div>
-                  <div className="flex-1 border-t border-dashed border-cyan/30 relative">
-                    <span className="absolute -top-3 left-1/2 -translate-x-1/2 text-[10px] font-mono text-cyan bg-surface px-2">
+
+                  <div className="flex-1 relative mx-3">
+                    <div className="border-t-2 border-dashed border-cyan/30" />
+                    <span className="absolute -top-5 left-1/2 -translate-x-1/2 font-mono text-sm text-cyan whitespace-nowrap">
                       iam:human-operator
                     </span>
                   </div>
-                  <div className="flex flex-col items-center gap-1">
-                    <div className="h-12 w-12 rounded-full border border-foreground/20 bg-foreground/5 flex items-center justify-center">
-                      <Bot className="h-5 w-5 text-foreground/60" />
-                    </div>
-                    <span className="text-xs font-mono text-muted">Agent</span>
+
+                  <div className="h-16 w-16 rounded-full border border-foreground/20 bg-foreground/5 flex items-center justify-center shrink-0">
+                    <Bot className="h-7 w-7 text-foreground/60" />
                   </div>
                 </div>
-                <p className="text-xs text-muted">
+
+                {/* Labels under circles */}
+                <div className="flex justify-between px-4 sm:px-8 mt-3">
+                  <span className="text-sm font-mono text-muted w-16 text-center">
+                    Human
+                  </span>
+                  <span className="text-sm font-mono text-muted w-16 text-center">
+                    Agent
+                  </span>
+                </div>
+
+                <p className="text-sm text-muted text-center mt-6 font-mono tracking-wide">
                   Immutable. Verifiable. On-chain.
                 </p>
               </div>
@@ -95,7 +104,6 @@ export function AgentsContent() {
             <TextShimmer
               as="span"
               className="font-mono text-base tracking-widest uppercase"
-              duration={3}
             >
               {"// THE SOLUTION"}
             </TextShimmer>
@@ -121,7 +129,6 @@ export function AgentsContent() {
           <TextShimmer
             as="span"
             className="font-mono text-base tracking-widest uppercase"
-            duration={3}
           >
             {"// HOW IT WORKS"}
           </TextShimmer>
@@ -159,7 +166,6 @@ export function AgentsContent() {
             <TextShimmer
               as="span"
               className="font-mono text-base tracking-widest uppercase"
-              duration={3}
             >
               {"// FOR INTEGRATORS"}
             </TextShimmer>
