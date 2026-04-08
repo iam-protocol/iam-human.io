@@ -6,6 +6,7 @@ import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 const solutionsDropdown = [
   { label: "Use Cases", href: "/solutions" },
+  { label: "Agent Anchor", href: "/agents" },
   { label: "Integrate", href: "/integrate" },
 ];
 
