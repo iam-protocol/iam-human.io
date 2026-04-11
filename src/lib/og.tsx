@@ -51,7 +51,7 @@ export function generateOGImage() {
             lineHeight: 1.5,
           }}
         >
-          Behavioral liveness verification. Zero biometric data transmitted.
+          Behavioral liveness verification. Privacy by architecture.
         </div>
 
         <div

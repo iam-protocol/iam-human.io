@@ -14,7 +14,7 @@ export const verificationSteps: VerificationStep[] = [
     description:
       "Three sensor streams record in parallel: voice, touch, and motion. 12 seconds of simultaneous behavioral data.",
     detail:
-      "The Pulse SDK accesses the device microphone, accelerometer, gyroscope, and touch digitizer. All sensors record in parallel for 12 seconds. Raw data stays in device memory and never reaches a network interface. On desktop, motion sensors are unavailable. Mouse pointer dynamics provide equivalent kinematic features.",
+      "The Pulse SDK accesses the device microphone, accelerometer, gyroscope, and touch digitizer. All sensors record in parallel for 12 seconds. Raw recordings stay in device memory and are destroyed after feature extraction. Only derived statistical summaries leave the device for server-side validation. On desktop, motion sensors are unavailable. Mouse pointer dynamics provide equivalent kinematic features.",
     icon: "activity",
   },
   {
@@ -54,7 +54,7 @@ export const verificationSteps: VerificationStep[] = [
     description:
       "Proof verified on Solana. Anchor updated. Progressive Trust Score recalculated from verification history.",
     detail:
-      "The proof is submitted via the IAM relayer (walletless) or the user's wallet (wallet-connected). The verifier checks the Groth16 proof on-chain. On success, the Anchor stores the verification timestamp in a rolling history. Trust Score recalculates using recency weighting and regularity analysis — consistent verifications over weeks score higher than rapid bursts.",
+      "The statistical feature summary is validated server-side by proprietary models that detect synthetic data, then the ZK proof is verified on-chain. Both must pass. The server sees only derived statistics (means, variances, spectral coefficients) — never raw recordings. On success, the Anchor stores the verification timestamp in a rolling history. Trust Score recalculates using recency weighting and regularity analysis.",
     icon: "check-circle",
   },
 ];
