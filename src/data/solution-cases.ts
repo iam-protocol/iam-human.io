@@ -30,7 +30,7 @@ export const solutionCases: SolutionCase[] = [
     problem:
       "NFT drops are exploited by farms. Trading competitions are gamed by wash-trading bots operating across hundreds of accounts.",
     solution:
-      "Mint gate: one human per allocation, verified by Anchor. Competition entry: require Anchor age > 30 days and recent verification. Short-lived bot accounts with zero trust cannot qualify. Each verification costs $0.01, making large-scale bot farming economically punitive.",
+      "Mint gate: one human per allocation, verified by Anchor. Competition entry: require Anchor age > 30 days and recent verification. Short-lived bot accounts with zero trust cannot qualify. Each verification costs the user SOL, making large-scale bot farming economically punitive.",
     example:
       "Tensor requires IAM verification for mint allowlists. Drift trading competitions check Anchor age and Trust Score at entry.",
   },

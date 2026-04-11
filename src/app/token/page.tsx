@@ -1,0 +1,21 @@
+import type { Metadata } from "next";
+import { SubpageHero } from "@/components/sections/subpage-hero";
+import { TokenContent } from "@/components/sections/token-content";
+
+export const metadata: Metadata = {
+  title: "Token",
+  description:
+    "IAM Token economics. Protocol fees, revenue flywheel, validator staking, and fair launch details.",
+};
+
+export default function Token() {
+  return (
+    <>
+      <SubpageHero
+        title="IAM Token"
+        subtitle="The economic layer of verified humanity."
+      />
+      <TokenContent />
+    </>
+  );
+}

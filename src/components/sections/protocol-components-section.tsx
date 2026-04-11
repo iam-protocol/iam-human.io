@@ -15,7 +15,7 @@ export function ProtocolComponentsSection() {
       </TextShimmer>
 
       <h2 className="mt-6 font-sans text-2xl font-semibold text-foreground md:text-3xl">
-        Four layers, one proof
+        Five layers, one proof
       </h2>
 
       <div className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-2">

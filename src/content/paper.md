@@ -51,7 +51,7 @@ The Temporal-Biometric Hash (TBH) pipeline must satisfy five properties:
 1. **Uniqueness.** *Fingerprints from distinct individuals have high expected Hamming distance:* `E[d_H(F_A, F_B)] ≈ n/2` *for n-bit fingerprints, A ≠ B.*
 2. **Temporal Consistency.** *Fingerprints from the same individual across sessions have bounded distance:* `d_H(F_t, F_{t+Δ}) ∈ [δ_min, δ_max]` *with high probability.*
 3. **Spoof Resistance.** *Generating a fingerprint F' such that* `d_H(F', F_target) < δ_max` *requires knowledge of the target's behavioral characteristics across multiple modalities.*
-4. **Privacy.** *The fingerprint F_T is never transmitted. Only a Poseidon commitment* `H_TBH = Poseidon(F_T, s)` *is published.*
+4. **Privacy.** *The fingerprint F_T is never transmitted. Only a Poseidon commitment* `H_TBH = Poseidon(F_T, s)` *is published on-chain. The underlying feature vector is transmitted to the validation server as a fixed-size statistical summary for provenance validation but is not stored (Section 6.8).*
 5. **Efficiency.** *All operations run on consumer hardware within a browser context in under 5 seconds.*
 
 #### **2.2. Challenge Generation**
@@ -174,13 +174,13 @@ The protocol's economic security is anchored by a native utility token (SPL Toke
 2. **Verification capacity.** Integrators stake IAM for discounted or unlimited verifications via capacity tiers.
 3. **Governance.** Token holders vote on protocol parameters.
 
-#### **4.2. Integrator-Pays Model**
+#### **4.2. User-Pays Model**
 
-Users never pay. The integrating application deposits SOL, USDC, or staked IAM into a protocol escrow. Each verification costs approximately $0.01—the relayer submits the on-chain transaction and deducts from the integrator's balance. This follows the pricing model of existing verification services (reCAPTCHA Enterprise, hCaptcha, Cloudflare Turnstile).
+In wallet-connected mode, the user pays a small protocol fee (~0.005 SOL) per verification. This is trivial for any Solana user but creates real economic cost for bot farms attempting to maintain thousands of identities. Integrators read on-chain verification state for free via `verifyIAMAttestation()`—no escrow, no API keys, no billing relationship. For walletless mode (liveness-check tier), the integrating application optionally funds verifications via the relayer API.
 
 #### **4.3. Validation Cycle**
 
-A margin on each verification (~$0.007) is collected into the protocol treasury. The treasury purchases IAM from the open market and distributes rewards to honest validators, creating buy pressure proportional to real verification volume.
+The protocol fee from each verification is collected into the protocol treasury. The treasury purchases IAM from the open market and distributes rewards to honest validators, creating buy pressure proportional to real verification volume.
 
 #### **4.4. Slashing**
 
@@ -210,9 +210,9 @@ The score is capped at a configurable maximum (currently 10,000) and computed on
 
 #### **5.3. Walletless Mode**
 
-The default flow requires no wallet. The user completes the behavioral challenge; the Pulse SDK generates the ZK proof; the relayer submits it on-chain using the integrator's escrow. The behavioral fingerprint is stored locally (encrypted with AES-256-GCM, key as non-extractable `CryptoKey` in IndexedDB) for future re-verification. The identity is device-bound and ephemeral—clearing storage resets it.
+Wallet-connected mode is the primary flow. The user pays a small protocol fee, signs the transaction, mints an IAM Anchor, and builds an on-chain Trust Score queryable by any integrator. This creates economic cost for bot farms: each fake identity requires a funded wallet and per-verification fees.
 
-Wallet-connected mode produces a persistent, portable identity. The user signs the transaction directly, mints an IAM Anchor, and builds an on-chain Trust Score queryable by any integrator.
+Walletless mode is a secondary liveness-check tier. The user completes the behavioral challenge; the Pulse SDK generates the ZK proof; the relayer submits it on-chain. The behavioral fingerprint is stored locally (encrypted with AES-256-GCM, key as non-extractable `CryptoKey` in IndexedDB) for future re-verification. The identity is device-bound and ephemeral—clearing storage resets it. No on-chain Anchor, no portable Trust Score.
 
 ---
 
@@ -293,7 +293,7 @@ Temporal consistency applies from the second verification onward. Each returning
 2. **Device-bound consistency** *(returning walletless verification). Behavioral drift matches a device-local fingerprint. Signal strength: medium. Suitable for session authentication, content gating.*
 3. **Portable identity** *(wallet-connected with Trust Score). Persistent on-chain Anchor with months of behavioral consistency visible to all integrators. Signal strength: high. Suitable for airdrop eligibility, DAO governance, DeFi access controls.*
 
-In walletless mode, the integrator funds verifications via escrow and controls abuse exposure through per-IP rate limiting, minimum Trust Score requirements, and escrow budget caps. This mirrors existing verification service pricing models [8]. The protocol provides the signal; the integrator sets the threshold.
+In wallet-connected mode, the user pays a protocol fee per verification, creating direct economic cost for bot farms. In walletless mode, the integrator optionally funds verifications and controls abuse exposure through per-IP rate limiting and minimum Trust Score requirements. The protocol provides the signal; the integrator sets the threshold.
 
 A bot that clears local storage before each walletless verification is perpetually at Tier 1—a liveness check with no temporal history. High-value integrations can require Tier 2 or Tier 3, making this strategy ineffective for anything beyond basic captcha equivalence.
 
@@ -303,7 +303,7 @@ The current implementation executes the entire verification pipeline—sensor ca
 
 The ZK proof provides a deterministic guarantee: the Hamming distance either falls within [δ_min, δ_max) or the proof is invalid. This is necessary but not sufficient. A valid proof confirms the *mathematical relationship* between two fingerprints but cannot confirm the *provenance* of the underlying sensor data.
 
-We identify a two-level validation architecture as a natural hardening path:
+The protocol implements a two-level validation architecture:
 
 **Level 1 (client-side, deterministic).** The Groth16 proof, as currently implemented. Provides mathematical certainty that the Hamming distance constraint is satisfied.
 
@@ -341,13 +341,13 @@ A native application also unlocks sensor modalities that browsers restrict: pers
 
 **Formal frameworks for proof of personhood.** Choudhuri et al. [19] provide the first rigorous cryptographic formalization of proof of personhood, defining ideal functionalities for Sybil-resistance, authenticated personhood, and unlinkability. Their framework assumes trusted authorities issue personhood credentials. IAM derives personhood from behavioral biometrics without a trusted issuer, which is more decentralized but harder to formalize under their model. Mapping IAM's security properties to this framework is identified as future work.
 
-**Worldcoin regulatory outcomes.** As of March 2026, Worldcoin (rebranded as World Network) has been banned, suspended, or fined in 10+ jurisdictions including Portugal, Germany, South Korea, Brazil, and Thailand [23]. Every enforcement action cited the collection, storage, or transfer of biometric data. IAM's architecture—where raw biometric data never leaves the user's device and the ZK proof is the only output—is designed to avoid these regulatory triggers.
+**Worldcoin regulatory outcomes.** As of March 2026, Worldcoin (rebranded as World Network) has been banned, suspended, or fined in 10+ jurisdictions including Portugal, Germany, South Korea, Brazil, and Thailand [23]. Every enforcement action cited the collection, storage, or transfer of biometric data. IAM's architecture—where raw biometric data never leaves the user's device and only a statistical summary and ZK proof are transmitted—is designed to avoid these regulatory triggers.
 
 ---
 
 ### **8. Implementation and Benchmarks**
 
-The protocol is deployed on Solana devnet with five components: three Anchor/Rust on-chain programs with full constraint validation and on-chain Trust Score; a Groth16/Circom circuit (1,996 constraints) with trusted setup; the Pulse SDK (TypeScript, published on npm, 52 tests); an executor node (Rust, live on Railway) providing the relayer API with rate limiting and commitment registry; and a demo application (Next.js on Vercel) with walletless and wallet-connected flows.
+The protocol is deployed on Solana devnet with five components: three Anchor/Rust on-chain programs with full constraint validation and on-chain Trust Score; a Groth16/Circom circuit (1,996 constraints) with trusted setup; the Pulse SDK (TypeScript, published on npm, 60 tests including an 8-phase adversarial pen test harness); an executor node (Rust, live on Railway) providing the relayer API with rate limiting and commitment registry; and a demo application (Next.js on Vercel) with walletless and wallet-connected flows.
 
 #### **8.1. Performance Benchmarks**
 
@@ -380,10 +380,10 @@ The protocol is honest about its limitations. First-time verification is a liven
 * IAM utility token: SPL Token-2022 with Confidential Balances for validator staking, capacity tiers, and governance.
 * Cross-chain deployment to Ethereum L2s after Solana mainnet stabilizes.
 * Formal analysis of SimHash collision probability bounds under adversarial feature distributions.
-* Cross-wallet fingerprint comparison. The current protocol enforces one IAM Anchor per wallet via PDA derivation but does not prevent the same individual from creating Anchors on multiple wallets with independent behavioral profiles. A cross-identity layer at the executor node would maintain a registry of SimHash fingerprints and compare each new verification against existing entries. If the Hamming distance between a new fingerprint and any existing entry falls below δ_max, the verification is flagged as a potential duplicate identity. The effectiveness of this approach depends on the persistence of involuntary behavioral features (jitter, shimmer, formant ratios, jerk derivatives) across sessions where the user deliberately modifies their behavior—a question we identify for empirical investigation.
-* Server-side feature validation. A second verification gate where the server analyzes the 134-dimensional feature vector for statistical properties inconsistent with genuine human behavior, using models inaccessible to the client (Section 6.8).
+* Cross-wallet fingerprint comparison is implemented in the server-side validation layer. The executor maintains a registry of SimHash fingerprints and compares each new verification against existing entries. If the Hamming distance between a new fingerprint and any existing entry falls below δ_max, the verification is flagged as a potential duplicate identity. Empirical investigation of the persistence of involuntary behavioral features across deliberate behavioral modification is ongoing.
+* Server-side feature validation is implemented as described in Section 6.8. The validation models, thresholds, and detection algorithms are proprietary — the protocol layer is open source for trust and auditability, the defense layer is private for security. This follows the emerging "immutable open source" model in decentralized systems: on-chain programs are transparent and immutable, off-chain defense logic is private.
+* Adversarial testing was conducted across eight phases: exact replay (blocked by δ_min), naive synthesis (passes client-side pipeline), sustained re-verification (100% success rate without server-side validation), human-to-bot handoff, cross-modality correlation analysis, Sybil cost modeling, feature-level optimization (converges in 251 iterations), and full-pipeline random search (90% success rate without server-side validation). These results motivated the implementation of server-side validation as a required defense layer.
 * Device attestation via native application. Hardware integrity verification before behavioral capture, implementing a positive security model as described in Section 6.9.
-* Adversarial testing program. A structured five-phase penetration testing methodology: (1) exact replay attacks to verify δ_min enforcement, (2) perturbed replays with controlled noise injection, (3) text-to-speech with scripted pointer input to test multi-modal synthesis, (4) sustained synthetic re-verification to measure whether a synthetic identity can accumulate Trust Score across multiple sessions, and (5) black-box optimization using the open-source feature extraction pipeline to search for synthetic inputs that produce valid proofs. Results will quantify the computational cost per synthetic identity and inform threshold calibration.
 
 The protocol is open source and published as a defensive disclosure to establish prior art. Source code, circuit definitions, and SDK are available at `github.com/iam-protocol`.
 

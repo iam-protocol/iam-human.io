@@ -217,7 +217,7 @@ export function VerifyWalletConnected({
           </ShimmerButton>
         </div>
         <p className="text-center text-xs text-muted">
-          All data stays on your device. Only the ZK proof leaves.
+          Raw data stays on your device. Only the ZK proof and a statistical summary leave.
         </p>
       </div>
     );

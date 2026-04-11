@@ -36,9 +36,29 @@ Last updated: 2026-04-11
 - [x] **`Math.min(...values)` stack overflow for large arrays** — Replaced spread with loop in entropy(). Fixed.
 - [x] **`skipAudio()` API contradicts mandatory audio requirement** — Removed skipAudio(). Audio failure now throws. Fixed.
 
+### Penetration Testing Results (2026-04-11, 8 phases)
+
+Test harness at `pulse-sdk/test/pentest.test.ts`. 60/60 tests pass.
+
+- [x] **Phase 1: Replay attack blocked** — Exact replays produce distance=0, caught by min_distance=3. Deterministic pipeline prevents replay. PASS.
+- [ ] **Phase 2: Naive synthesis passes re-verification** — Different noise seeds with same structural parameters produce distance=48, within [3,96) threshold. A basic TTS + scripted input bot passes. VULNERABILITY.
+- [ ] **Phase 3: 100% sustained re-verification** — 10/10 parameter-varied sessions land within threshold. Distances: [56,38,65,54,50,53,37,90,78,82]. A bot can build Trust Score indefinitely. CRITICAL VULNERABILITY.
+- [ ] **Phase 3b: Human baseline → bot re-verification** — Bot mimicking a human's voice profile passes 10/10 re-verifications. Bot can maintain a human's identity without their ongoing participation. CRITICAL VULNERABILITY.
+- [ ] **Phase 4: Cross-modality correlation not distinguishable** — Correlation difference between "human" and "bot" sessions: 0.010. Too small to use as detection signal. Client-side correlation checks would not help. FINDING.
+- [ ] **Phase 5: Sybil economics** — 1000 synthetic identities at Trust Score 200: 1.1 hours, 0.2 SOL. Economically trivial. CRITICAL VULNERABILITY.
+- [ ] **Phase 6: Feature-level optimization converges in 251 iterations (45ms)** — Attacker with source access can craft any target fingerprint. Hyperplanes are deterministic from hardcoded seed. CRITICAL VULNERABILITY.
+- [ ] **Phase 6b: Full pipeline 90% success rate** — Random parameter search through full extraction pipeline passes 27/30 attempts. Attacker doesn't need optimization — random variation works. CRITICAL VULNERABILITY.
+
+**Required hardening (informed by pen test results):**
+- Server-generated challenges (prevent pre-computation)
+- Server-side feature validation with hidden models (attacker can't see checks)
+- Cross-wallet fingerprint registry (detect Sybil clustering in feature space)
+- Tighter Hamming distance threshold (96 bits too generous, need empirical human data)
+- Raw audio TTS detection (spectral artifacts, breath patterns)
+
 ### Low
 
-- [x] **No tests for extraction, submission, session, or sensor modules** — Added 21 extraction tests (speaker, motion, touch, mouse dynamics, fusion). 52 total tests. Fixed.
+- [x] **No tests for extraction, submission, session, or sensor modules** — Added 21 extraction tests (speaker, motion, touch, mouse dynamics, fusion). 60 total tests (including pen test). Fixed.
 - [x] **ScriptProcessorNode deprecated** — Documented in audio.ts with migration note for v1.0. All current browsers support it.
 - [x] **In-memory localStorage fallback lost on page reload** — Documented in anchor.ts. Private browsing users must re-enroll each session.
 
