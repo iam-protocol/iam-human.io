@@ -5,7 +5,7 @@ export const privacyGuarantees: PrivacyGuarantee[] = [
     icon: "smartphone",
     title: "On-device processing",
     description:
-      "Sensor capture, feature extraction, hashing, and proof generation all run on the user's phone. No server computes on biometric data.",
+      "Sensor capture, feature extraction, hashing, and proof generation all run on the user's device. No raw biometric recordings are transmitted or stored server-side.",
   },
   {
     icon: "database",
@@ -15,9 +15,9 @@ export const privacyGuarantees: PrivacyGuarantee[] = [
   },
   {
     icon: "file-lock",
-    title: "ZK proof is the only output",
+    title: "Minimal data transmission",
     description:
-      "The Pulse SDK transmits a Groth16 proof and a Poseidon commitment. The fingerprint, salt, and raw sensor data never cross the network.",
+      "The Pulse SDK transmits a Groth16 proof, a Poseidon commitment, and a compact statistical summary (134 derived features). Raw sensor data and the behavioral fingerprint never cross the network.",
   },
   {
     icon: "eye-off",
@@ -35,6 +35,6 @@ export const privacyGuarantees: PrivacyGuarantee[] = [
     icon: "shield",
     title: "GDPR and EU AI Act aligned",
     description:
-      "Behavioral verification (not identification) falls outside the strictest AI Act categories. Data minimization is guaranteed by architecture, not policy.",
+      "Behavioral verification (not identification) is designed to minimize regulatory exposure under the EU AI Act. Data minimization is enforced by architecture, not policy.",
   },
 ];

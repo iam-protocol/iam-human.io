@@ -34,8 +34,6 @@ export function SolutionCasesSection() {
             <motion.div
               key={c.title}
               layout
-              onHoverStart={() => setExpandedIndex(i)}
-              onHoverEnd={() => setExpandedIndex(null)}
               onClick={() => setExpandedIndex(isExpanded ? null : i)}
               className={cn(
                 "cursor-pointer rounded-xl border bg-surface/30 transition-colors",

@@ -43,7 +43,7 @@ export function VerificationTimelineSection() {
           Three stages, seven steps.
         </h2>
         <p className="mt-3 text-muted whitespace-pre-line">
-          {"From behavioral challenge to on-chain proof.\nNo biometric data leaves your device at any point in this pipeline."}
+          {"From behavioral challenge to on-chain proof.\nNo raw biometric data leaves your device. Only derived statistical features are validated server-side."}
         </p>
       </div>
 

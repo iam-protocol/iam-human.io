@@ -2,7 +2,6 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { ChevronDown } from "lucide-react";
 
 interface DropdownItem {
   label: string;
@@ -46,15 +45,20 @@ export function NavDropdown({
       onMouseEnter={handleEnter}
       onMouseLeave={handleLeave}
     >
-      <button
-        className="flex items-center gap-1 text-sm text-foreground/60 transition-colors duration-200 hover:text-foreground"
+      <a
+        role="button"
+        tabIndex={0}
+        aria-expanded={open}
+        aria-haspopup="true"
         onClick={() => setOpen((prev) => !prev)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setOpen((prev) => !prev); }
+          if (e.key === "Escape") setOpen(false);
+        }}
+        className="text-sm text-foreground/70 transition-colors duration-200 hover:text-foreground py-2 cursor-pointer"
       >
-        {label}
-        <ChevronDown
-          className={`h-3.5 w-3.5 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
-        />
-      </button>
+        {label} <span aria-hidden="true" className="text-[8px] text-foreground/40 ml-0.5 relative -top-px">▼</span>
+      </a>
 
       {open && (
         <div className="absolute left-1/2 top-full -translate-x-1/2 pt-2">
@@ -64,7 +68,7 @@ export function NavDropdown({
                 key={item.href}
                 href={item.href}
                 onClick={() => setOpen(false)}
-                className="block px-4 py-2 text-sm text-foreground/60 transition-colors duration-150 hover:text-foreground hover:bg-white/5"
+                className="block px-4 py-2 text-sm text-foreground/60 transition-colors duration-150 hover:text-foreground hover:bg-foreground/5"
               >
                 {item.label}
               </Link>

@@ -5,7 +5,7 @@ export const integrationSnippets: IntegrationSnippet[] = [
     mode: "walletless",
     title: "Walletless verification",
     description:
-      "Users verify without a wallet. The Pulse SDK generates a proof and submits it via the IAM relayer. Your API key identifies your escrow account.",
+      "Liveness-check tier for non-crypto users. The Pulse SDK generates a proof and submits via the IAM relayer. No wallet needed. The integrator optionally funds verifications via API key.",
     code: `import { PulseSDK } from '@iam-protocol/pulse-sdk';
 
 const pulse = new PulseSDK({
@@ -25,7 +25,7 @@ if (result.success) {
     mode: "wallet-connected",
     title: "Wallet-connected verification",
     description:
-      "For DeFi and DAO users who want self-custody. The user signs the verification transaction with their own wallet.",
+      "The primary verification flow. The user pays a small protocol fee (~0.005 SOL) and signs the transaction with their wallet. Your app reads the result on-chain for free.",
     code: `import { PulseSDK } from '@iam-protocol/pulse-sdk';
 import { useWallet, useConnection } from '@solana/wallet-adapter-react';
 

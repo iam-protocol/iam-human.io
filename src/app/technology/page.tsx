@@ -11,7 +11,7 @@ import { VerificationOrb } from "@/components/ui/verification-orb";
 export const metadata: Metadata = {
   title: "Technology",
   description:
-    "How IAM verification works. Seven steps from behavioral challenge to on-chain proof, with zero biometric data transmitted.",
+    "How IAM verification works. Seven steps from behavioral challenge to on-chain proof. Raw recordings never leave your device.",
 };
 
 export default function Technology() {
@@ -29,7 +29,7 @@ export default function Technology() {
       <section className="mx-auto max-w-3xl px-6 py-24 text-center">
         <hr className="mx-auto mb-16 w-24 border-t border-foreground/[0.06]" />
         <p className="font-mono text-xl tracking-[0.02em] text-foreground md:text-2xl">
-          Zero data. On-chain proof.
+          Raw data stays. Proof goes on-chain.
         </p>
         <div className="mt-8 flex justify-center">
           <Link href="/solutions">
