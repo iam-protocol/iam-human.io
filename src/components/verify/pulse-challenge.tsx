@@ -295,7 +295,7 @@ export function PulseChallenge({
       </div>
 
       <p className="text-center text-xs text-muted">
-        All sensors recording simultaneously. Data stays on your device.
+        All sensors recording simultaneously. Raw data stays on your device.
       </p>
     </div>
   );

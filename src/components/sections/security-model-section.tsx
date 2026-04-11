@@ -10,9 +10,9 @@ const DEFENSES = [
       "The ZK circuit enforces a minimum Hamming distance between consecutive fingerprints. Perfect replay is rejected at the proof level. A bot submitting identical synthetic data twice gets blocked before reaching the chain.",
   },
   {
-    title: "Behavioral Entropy Scoring",
+    title: "Server-Side Feature Validation",
     description:
-      "The feature extraction pipeline measures Shannon entropy and jitter variance across each sensor stream. Real human data has moderate, fluctuating entropy. Synthetic data from TTS engines or scripted inputs is too uniform and gets flagged before hashing.",
+      "The 134-dimensional statistical feature summary is validated by proprietary server-side models before the on-chain proof is accepted. These models detect synthetic speech artifacts, unnatural jitter patterns, and cross-modality inconsistencies. The validation logic is private — the attacker can see that checks happen but not how they work.",
   },
   {
     title: "Progressive Trust Score",
@@ -30,9 +30,14 @@ const DEFENSES = [
       "Three independent sensor streams record in parallel: microphone, pointer/touch digitizer, and device motion (where available). A bot needs to fake realistic voice, tremor, and touch pressure simultaneously. Spoofing one modality is feasible. Spoofing all three with consistent behavioral entropy is not.",
   },
   {
+    title: "Cross-Wallet Fingerprint Registry",
+    description:
+      "The server maintains a registry of all verified behavioral fingerprints. New verifications are compared against existing entries. Sybil attacks — where one actor creates many identities — produce clustered fingerprints that the registry detects and rejects.",
+  },
+  {
     title: "Economic Disincentives",
     description:
-      "Each verification costs ~$0.01 on-chain. Each wallet requires SOL. Maintaining thousands of fake identities over months, re-verifying regularly to build trust, costs real money. The attack costs more than the value it extracts.",
+      "Each verification costs the user SOL. Each wallet requires funding. Server-side validation rejects synthetic data before it reaches the chain. Maintaining thousands of fake identities over months — funding wallets, paying per verification, building Trust Score across separate days — costs real money. The attacker pays for every attempt.",
   },
 ];
 
@@ -66,9 +71,9 @@ export function SecurityModelSection() {
         How IAM resists bots.
       </h2>
       <p className="mt-3 max-w-2xl text-foreground/70">
-        No single verification proves humanness. IAM makes Sybil attacks
-        economically irrational through layered defenses that increase the cost
-        of faking identity at scale.
+        Open protocol for trust. Private validation for security. Synthetic
+        data is rejected server-side before reaching the chain. Integrators
+        pay only for successful human verifications.
       </p>
 
       <div className="mt-10 grid gap-4 md:grid-cols-2">

@@ -10,11 +10,11 @@ export function PrivacySection() {
         className="font-mono text-base tracking-widest uppercase"
         duration={3}
       >
-        {"// PRIVACY GUARANTEES"}
+        {"// PRIVACY MODEL"}
       </TextShimmer>
 
       <h2 className="mt-6 font-sans text-2xl font-semibold text-foreground md:text-3xl">
-        What the protocol guarantees
+        Privacy by architecture
       </h2>
 
       <div className="mt-12 grid grid-cols-1 gap-8 md:grid-cols-2">

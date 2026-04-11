@@ -8,8 +8,8 @@ import { TextShimmer } from "@/components/ui/text-shimmer";
 const CONFIG_OPTIONS = [
   { name: "cluster", type: '"devnet" | "mainnet-beta"', description: "Solana cluster to connect to" },
   { name: "rpcEndpoint", type: "string", description: "Custom RPC URL (optional)" },
-  { name: "relayerUrl", type: "string", description: "IAM relayer endpoint for walletless mode" },
-  { name: "relayerApiKey", type: "string", description: "API key identifying your integrator escrow account" },
+  { name: "relayerUrl", type: "string", description: "IAM relayer endpoint (walletless mode only)" },
+  { name: "relayerApiKey", type: "string", description: "API key for walletless mode (optional)" },
   { name: "wasmUrl", type: "string", description: "Path to iam_hamming.wasm circuit artifact" },
   { name: "zkeyUrl", type: "string", description: "Path to iam_hamming_final.zkey proving key" },
   { name: "threshold", type: "number", description: "Hamming distance threshold (default: 96)" },
@@ -125,13 +125,14 @@ export function IntegrateGuide() {
 
         <GlowCard className="mt-6">
           <p className="font-mono text-base font-semibold text-foreground mb-2">
-            Integrator-pays model
+            Zero integration cost
           </p>
           <p className="text-sm text-foreground/80 leading-relaxed">
-            Users never pay. Deposit SOL or USDC into your integrator escrow
-            account. Each verification costs ~$0.01 — the relayer submits the
-            on-chain transaction and deducts from your balance. First 1,000
-            verifications are free.
+            Wallet-connected users pay a small protocol fee per verification
+            (~0.005 SOL). Your application reads on-chain state for free via{" "}
+            <code className="text-cyan">verifyIAMAttestation()</code>. No escrow,
+            no API keys, no billing relationship. You get verified humans.
+            The user pays to prove they&apos;re human.
           </p>
         </GlowCard>
       </section>
@@ -146,12 +147,13 @@ export function IntegrateGuide() {
         </TextShimmer>
 
         <h2 className="mt-4 font-mono text-xl font-bold text-foreground">
-          Your escrow, your rules.
+          Built-in bot resistance.
         </h2>
         <p className="mt-3 text-sm text-foreground/70 leading-relaxed max-w-2xl">
-          Walletless mode follows the same model as reCAPTCHA Enterprise and
-          hCaptcha: the integrator pays per verification, not the user. You
-          control cost exposure and trust requirements through four mechanisms.
+          Every verification costs the user SOL. Synthetic data is rejected
+          server-side before reaching the chain. Bot farms must fund thousands
+          of wallets, pay per verification, and maintain Trust Score across
+          months. You control trust requirements through four mechanisms.
         </p>
 
         <div className="mt-8 grid gap-4 md:grid-cols-2">
