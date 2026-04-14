@@ -210,10 +210,15 @@ body {
   z-index: -1;
   border-radius: inherit;
   overflow: hidden;
-  backdrop-filter: blur(8px) saturate(1.8) brightness(1.05);
-  -webkit-backdrop-filter: blur(8px) saturate(1.8) brightness(1.05);
   background-color: var(--glass-tint);
   background-image: var(--glass-specular);
+}
+
+@media (min-width: 768px) {
+  .glass-panel::before {
+    backdrop-filter: blur(8px) saturate(1.8) brightness(1.05);
+    -webkit-backdrop-filter: blur(8px) saturate(1.8) brightness(1.05);
+  }
 }
 
 /* ----------------------------------------------------------------
