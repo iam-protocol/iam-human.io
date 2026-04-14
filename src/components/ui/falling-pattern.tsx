@@ -7,6 +7,7 @@ const SQUARE_SIZE = 4;
 const GRID_GAP = 6;
 const FLICKER_CHANCE = 0.3;
 const OPACITY_BUCKETS = 32;
+const MOBILE_FRAME_INTERVAL = 50; // 20fps cap on mobile (vs 60fps desktop)
 
 function buildPalette(maxOpacity: number): string[] {
   const isDark = document.documentElement.classList.contains("dark");
@@ -71,8 +72,16 @@ export function FallingPattern({ className }: { className?: string }) {
       bucketIndices[b] = [];
     }
 
+    const isMobile = window.matchMedia("(max-width: 767px)").matches;
+
     const animate = (time: number) => {
       if (!inView) return;
+
+      // Throttle to 20fps on mobile to reduce GPU contention during scroll
+      if (isMobile && time - lastTime < MOBILE_FRAME_INTERVAL) {
+        animationFrameId = requestAnimationFrame(animate);
+        return;
+      }
 
       const deltaTime = Math.min((time - lastTime) / 1000, 0.1);
       lastTime = time;
