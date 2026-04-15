@@ -147,13 +147,13 @@ These items directly affect the on-chain verification flow. Fixing any one of th
 
 - [ ] **`/attest` endpoint does not verify caller owns the wallet** — Any authenticated client (valid API key) can call `/attest` with any wallet address. The endpoint verifies that an IdentityState PDA exists on-chain for that wallet, but does not verify the caller controls the wallet. Acceptable for devnet because API key gates access and the SDK calls this after a verified session. Production should add a signed challenge or pass-through from the wallet-connected verification flow to prove wallet ownership.
 - [ ] **SAS credential authority is the relayer keypair** — The same keypair that relays walletless verifications is also the SAS credential authority. Compromise of the relayer keypair means an attacker can issue fake attestations. Production should use a separate authority keypair stored in a more secure environment (HSM or separate secrets manager), distinct from the relayer hot wallet.
-- [ ] **Agent Anchor hardcodes devnet program ID** — `attestAgentOperator` uses `AGENT_REGISTRY_CONFIG.programIdDevnet` for PDA derivation. Production needs the program ID to be selected based on cluster (devnet vs mainnet) via PulseConfig.
-- [ ] **No rate limiting specific to `/attest`** — The `/attest` endpoint shares the same per-API-key rate limiter as `/verify`. An attacker with a valid API key could spam attestation requests for wallets that have IdentityState accounts. Each request costs ~0.003 SOL from the relayer. Production should add attestation-specific rate limiting or require the attestation to follow a recent verification transaction.
+- [x] **Agent Anchor hardcodes devnet program ID** — Both `attestAgentOperator` and `getAgentHumanOperator` now accept optional `cluster` parameter and select program ID accordingly. Defaults to devnet for backward compatibility. Fixed 2026-04-15.
+- [x] **No rate limiting specific to `/attest`** — Attestation endpoint now has its own rate limiter at 10 requests/min per API key, separate from the general 60/min limit. Fixed 2026-04-15.
 
 ### Status Endpoint (added 2026-04-08, PR #12 under review)
 
-- [ ] **`/status` endpoint exposes relayer SOL balance publicly** — Any unauthenticated request to `/status` returns `relayer_balance_lamports`. On mainnet, an attacker could monitor this to detect when the relayer is running low and time denial-of-service. Fix: return balance only for authenticated requests, or redact for public.
-- [ ] **`/status` makes an RPC call on every request** — `get_balance()` hits Solana RPC per request with no caching. Rapid polling burns through RPC rate limits. Fix: cache balance with 30s TTL using atomics.
+- [x] **`/status` endpoint exposes relayer SOL balance publicly** — Unauthenticated requests now return only `{"status": "ok"}`. Full metrics (uptime, verification count, attestation count, balance) require valid API key. Fixed 2026-04-15.
+- [x] **`/status` makes an RPC call on every request** — Balance cached with 30-second TTL using `RwLock<(u64, u64)>`. Already implemented.
 - [ ] **`.unwrap()` in StatusMetrics::new()** — `SystemTime::now().duration_since(UNIX_EPOCH).unwrap()` should use `.unwrap_or_default()` per repo conventions. Review feedback sent.
 
 ---
