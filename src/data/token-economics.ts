@@ -50,17 +50,21 @@ export const flywheel: FlyWheelStep[] = [
 ];
 
 export const tokenDistribution: TokenAllocation[] = [
-  { name: "Community", percentage: 40, vesting: "Unlocked at genesis" },
+  {
+    name: "Community",
+    percentage: 30,
+    vesting: "10% airdrop at genesis, 20% via staking and usage emissions over 4 years",
+  },
   {
     name: "Ecosystem Grants",
     percentage: 20,
-    vesting: "12-month linear vesting",
+    vesting: "36-month linear vesting",
   },
-  { name: "Treasury", percentage: 15, vesting: "Protocol-controlled" },
+  { name: "Treasury", percentage: 25, vesting: "Protocol-controlled, DAO-governed" },
   {
-    name: "Team",
+    name: "Team & Contributors",
     percentage: 15,
-    vesting: "24-month linear, 6-month cliff",
+    vesting: "48-month linear, 12-month cliff",
   },
   {
     name: "Initial Liquidity",
