@@ -180,6 +180,7 @@ kept private per responsible-disclosure convention.
 ### High
 
 - [x] **Statistical gap surfaced during T3b campaign** — Feature-space optimization against the server-side validation pipeline found a narrow exploitable seam across a small subset of probes. Hardened via an additional consistency constraint in the validation service; subsequent campaign attempts rejected. Attack mechanism and specific constraint kept private. Fixed 2026-04-18.
+- [x] **Cross-modality correlation check removed** — Discovered 2026-04-20 during T4a Wave 1 log analysis: the check correlated feature-vector statistical summaries at matching index positions across modalities, which is a category error (correlating mean F0 in Hz against mean jerk in m/s³ has no semantic grounding). Observed range on unrelated inputs 0.004–0.881, threshold 0.01 was below noise floor — zero defense value. Removed in iam-validation 2026-04-21. Sound cross-modal defense remains via the temporal coupling check (Pearson on F0 contour × accel magnitude time-series, same-unit same-time). Semantic replacement checks deferred pending human-baseline calibration data.
 
 ---
 
