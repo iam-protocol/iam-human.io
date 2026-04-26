@@ -70,7 +70,7 @@ export const campaignResults: CampaignResult[] = [
   },
   {
     tier: "T4b",
-    description: "Modern voice cloning (XTTS-v2, F5-TTS)",
+    description: "Real-time synthesized voice (XTTS-v2, F5-TTS, streaming TTS)",
     attempts: "—",
     passRate: "queued",
     status: "next-phase",
