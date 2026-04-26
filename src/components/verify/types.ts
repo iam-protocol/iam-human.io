@@ -17,6 +17,17 @@ export type VerifyState =
       commitment: string;
       txSignature?: string;
     }
+  | {
+      // Soft-reject (master-list #94): a server-validation rejection in a
+      // user-recoverable category (variance_floor, entropy_bounds,
+      // temporal_coupling_low, phrase_content_mismatch). The user is invited
+      // to retry without a hard failure UI. After `attemptsRemaining` hits
+      // zero the next failure routes to `failed` instead.
+      step: "soft_failed";
+      intent: CaptureIntent;
+      reason: string;
+      attemptsRemaining: number;
+    }
   | { step: "failed"; error: string };
 
 export type VerifyAction =
@@ -24,6 +35,11 @@ export type VerifyAction =
   | { type: "CAPTURE_DONE" }
   | { type: "PROOF_COMPLETE" }
   | { type: "VERIFICATION_SUCCESS"; commitment: string; txSignature?: string }
+  | {
+      type: "VERIFICATION_SOFT_FAILED";
+      reason: string;
+      attemptsRemaining: number;
+    }
   | { type: "VERIFICATION_FAILED"; error: string }
   | { type: "RESET" };
 

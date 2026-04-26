@@ -12,6 +12,7 @@ import {
   SigningView,
   VerifiedView,
   FailedView,
+  SoftFailedView,
 } from "@/components/verify/step-views";
 import { ResetBaselineDialog } from "@/components/verify/reset-baseline-dialog";
 import { WalletConnectButton } from "@/components/ui/wallet-connect-button";
@@ -66,6 +67,16 @@ export function VerifyWalletConnected({
   // capture-completion handler can choose between verify vs reset paths
   // without reading the reducer state (which may race the handler).
   const intentRef = useRef<"verify" | "reset">("verify");
+  // Soft-reject retry budget (master-list #94). Counts attempts taken in the
+  // current session — incremented at the top of handleStart, reset to 0 on
+  // RESET / VERIFICATION_SUCCESS. When attemptsUsed < MAX_ATTEMPTS and the
+  // server returns a user-recoverable reason, we route to soft_failed (retry
+  // available) instead of failed (hard stop). Capped to bound bot retry
+  // benefit per wallet — the server-side per-wallet cap (master-list #94 C4)
+  // enforces this across wallet refreshes; this client counter just drives
+  // the UX inside a session.
+  const MAX_ATTEMPTS = 3;
+  const attemptsUsedRef = useRef(0);
 
   useEffect(() => {
     setHasMotion(navigator.maxTouchPoints > 0);
@@ -109,9 +120,21 @@ export function VerifyWalletConnected({
   async function handleStart(intent: "verify" | "reset" = "verify") {
     if (startingRef.current) return;
     startingRef.current = true;
+    // Verify and reset are different operations and must not share the
+    // retry budget. If the user just exhausted 3 verify attempts and now
+    // clicks "Reset baseline", the reset capture starts with a fresh
+    // budget — otherwise any borderline failure during reset would
+    // immediately route to hard-fail (because attemptsUsedRef >= MAX).
+    if (intentRef.current !== intent) {
+      attemptsUsedRef.current = 0;
+    }
     intentRef.current = intent;
     setRequesting(true);
     setChallengePhrase(null);
+    // Count this attempt against the (intent-scoped) session budget.
+    // Soft-fail / hard-fail routing in handleCaptureComplete reads from
+    // this counter.
+    attemptsUsedRef.current += 1;
 
     try {
       voicedFramesRef.current = 0;
@@ -238,21 +261,49 @@ export function VerifyWalletConnected({
       setTimeout(() => reject(new Error("Proof generation timed out. Please try again.")), PROOF_TIMEOUT_MS)
     );
 
+    // Set of safe-to-reveal validator reasons that route to the soft-fail
+    // retry UX instead of the hard-fail page. Must stay in sync with
+    // `entros-validation::ReasonCode::safe_label` (the server-side allowlist)
+    // and `SOFT_HINT` keys in `step-views.tsx` (the client-side hint
+    // dictionary). Drift in either direction means a soft-rejectable reason
+    // either escapes to hard-fail (annoying for the user) or slips into
+    // soft-fail without a hint (confusing).
+    const RETRYABLE_REASONS = new Set([
+      "variance_floor",
+      "entropy_bounds",
+      "temporal_coupling_low",
+      "phrase_content_mismatch",
+    ]);
+
     Promise.race([proofPromise, timeoutPromise])
       .then((result) => {
         dispatch({ type: "PROOF_COMPLETE" });
         if (result.success) {
+          attemptsUsedRef.current = 0;
           dispatch({
             type: "VERIFICATION_SUCCESS",
             commitment: commitmentToHex(result.commitment),
             txSignature: result.txSignature,
           });
-        } else {
-          dispatch({
-            type: "VERIFICATION_FAILED",
-            error: result.error ?? "Verification failed",
-          });
+          return;
         }
+        const reason = result.reason;
+        const canRetry =
+          typeof reason === "string" &&
+          RETRYABLE_REASONS.has(reason) &&
+          attemptsUsedRef.current < MAX_ATTEMPTS;
+        if (canRetry) {
+          dispatch({
+            type: "VERIFICATION_SOFT_FAILED",
+            reason: reason as string,
+            attemptsRemaining: MAX_ATTEMPTS - attemptsUsedRef.current,
+          });
+          return;
+        }
+        dispatch({
+          type: "VERIFICATION_FAILED",
+          error: result.error ?? "Verification failed",
+        });
       })
       .catch((err: Error) => {
         dispatch({
@@ -266,6 +317,9 @@ export function VerifyWalletConnected({
     sessionRef.current = null;
     (touchRef as React.MutableRefObject<HTMLDivElement | null>).current = null;
     setAudioLevel(0);
+    // Wipe the retry budget when the user explicitly resets — a fresh
+    // session starts at 0 attempts used.
+    attemptsUsedRef.current = 0;
     dispatch({ type: "RESET" });
   }
 
@@ -386,6 +440,17 @@ export function VerifyWalletConnected({
 
   if (state.step === "processing") return <ProvingView stage={processingStage} />;
   if (state.step === "signing") return <SigningView />;
+
+  if (state.step === "soft_failed") {
+    return (
+      <SoftFailedView
+        reason={state.reason}
+        attemptsRemaining={state.attemptsRemaining}
+        onTryAgain={() => handleStart(state.intent)}
+        onCancel={handleReset}
+      />
+    );
+  }
 
   if (state.step === "verified") {
     const wasReset = state.intent === "reset";

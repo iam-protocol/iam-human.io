@@ -8,9 +8,19 @@ export function verifyReducer(
 ): VerifyState {
   switch (action.type) {
     case "START_CAPTURE":
-      // Allow starting from idle, or re-entering from the failed state when
-      // the user chose to reset their baseline after a baseline-missing error.
-      if (state.step !== "idle" && state.step !== "failed") return state;
+      // Allow starting from idle, re-entering from the failed state when the
+      // user chose to reset their baseline after a baseline-missing error, or
+      // re-entering from soft_failed when the user clicks "Try again" on a
+      // soft-reject (master-list #94). The parent component owns the retry
+      // counter — by the time it dispatches START_CAPTURE we trust the
+      // attempt budget has been checked.
+      if (
+        state.step !== "idle" &&
+        state.step !== "failed" &&
+        state.step !== "soft_failed"
+      ) {
+        return state;
+      }
       return { step: "capturing", intent: action.intent };
 
     case "CAPTURE_DONE":
@@ -28,6 +38,18 @@ export function verifyReducer(
         intent: state.intent,
         commitment: action.commitment,
         txSignature: action.txSignature,
+      };
+
+    case "VERIFICATION_SOFT_FAILED":
+      // Only reachable from processing/signing — capture must have completed
+      // and validation must have happened. attemptsRemaining is the budget
+      // left AFTER this attempt; the parent decrements before dispatching.
+      if (state.step !== "processing" && state.step !== "signing") return state;
+      return {
+        step: "soft_failed",
+        intent: state.intent,
+        reason: action.reason,
+        attemptsRemaining: action.attemptsRemaining,
       };
 
     case "VERIFICATION_FAILED":
