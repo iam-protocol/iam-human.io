@@ -3,7 +3,7 @@
 **Document Version:** 3.0
 **Original Date:** June 27, 2025
 **Updated:** April 25, 2026
-**Word Count:** Approx. 6300
+**Word Count:** Approx. 6500
 
 ---
 
@@ -188,7 +188,7 @@ The protocol's economic security is anchored by a native utility token (SPL Toke
 
 #### **4.2. User-Pays Model**
 
-In wallet-connected mode, the user pays a small protocol fee (~0.005 SOL) per verification. This is trivial for any Solana user but creates real economic cost for bot farms attempting to maintain thousands of identities. Integrators read on-chain verification state for free via `verifyEntrosAttestation()`—no escrow, no API keys, no billing relationship. For walletless mode (liveness-check tier), the integrating application optionally funds verifications via the relayer API.
+Users pay a small protocol fee (~0.005 SOL) per verification. This is trivial for any Solana user but creates real economic cost for bot farms attempting to maintain thousands of identities. Integrators read on-chain verification state for free via `verifyEntrosAttestation()`—no escrow, no API keys, no billing relationship.
 
 #### **4.3. Validation Cycle**
 
@@ -206,13 +206,13 @@ The design specifies a probabilistic audit mechanism: a configurable fraction of
 
 The Entros Anchor is implemented using SPL Token-2022 with the `NonTransferable` mint extension. Each wallet maps to exactly one Anchor via a Program Derived Address (PDA).
 
-The on-chain data structure stores: `owner` (Pubkey), `creation_timestamp` (i64), `last_verification_timestamp` (i64), `verification_count` (u32), `trust_score` (u16), `current_commitment` ([u8;32]), and a rolling window of the 10 most recent verification timestamps for Trust Score computation.
+The on-chain data structure stores: `owner` (Pubkey), `creation_timestamp` (i64), `last_verification_timestamp` (i64), `verification_count` (u32), `trust_score` (u16), `current_commitment` ([u8;32]), and a rolling window of the 52 most recent verification timestamps for Trust Score computation.
 
 #### **5.2. Progressive Trust Score**
 
-The Trust Score rewards consistency over time, not volume. A bot verifying 100 times in one day scores lower than a human verifying weekly for months. The formula combines three components:
+The Trust Score is a function of the temporal pattern of verifications, not their count. Repeat verifications within the same rolling 24-hour window collapse into a single contribution; once the 52-slot window saturates, additional same-window verifications reduce the score by displacing older history. Sustained verification across distinct days over months is the only path to a high score. The formula combines three components:
 
-**Recency-weighted count.** Each of the last 10 verification timestamps contributes `3000 / (30 + d_i)` where `d_i` is the number of days since that verification, multiplied by a protocol-configurable base increment.
+**Recency-weighted count.** The 52-slot timestamp window is first deduplicated by 24-hour bucket: timestamps sharing a `floor((now - ts) / 86400)` value collapse to the most recent occurrence (a sliding 24-hour slice from `now`, not a UTC calendar day), so only one verification per rolling 24-hour period contributes. Each remaining unique-day timestamp contributes `3000 / (30 + d_i)` where `d_i` is the floor-days since that verification, scaled by `base_trust_increment / 100` (currently 1.0 in deployed config). Once the window is full, same-day re-verification reduces the score: the new entry shifts the array — dropping slot 51's contribution — then collapses into today's existing 24-hour bucket, yielding net loss of one historical contribution with no offsetting gain.
 
 **Regularity bonus.** The standard deviation of inter-verification gaps is computed. Lower variance yields a higher bonus (up to 20 points), rewarding regular spacing.
 
@@ -220,11 +220,11 @@ The Trust Score rewards consistency over time, not volume. A bot verifying 100 t
 
 The score is capped at a configurable maximum (currently 10,000) and computed on-chain during the `update_anchor` instruction, reading parameters from a cross-program PDA.
 
-#### **5.3. Walletless Mode**
+#### **5.3. Verification Modes**
 
-Wallet-connected mode is the primary flow. The user pays a small protocol fee, signs the transaction, mints an Entros Anchor, and builds an on-chain Trust Score queryable by any integrator. This creates economic cost for bot farms: each fake identity requires a funded wallet and per-verification fees.
+Wallet-connected mode is the primary flow. The user pays the per-verification fee, signs the transaction, mints an Entros Anchor, and builds an on-chain Trust Score queryable by any integrator. Each verification produces a SAS attestation that integrators read for free. The economic surface — per-verification fees plus per-wallet funding — directly raises the cost of bot farms.
 
-Walletless mode is a secondary liveness-check tier. The user completes the behavioral challenge; the Pulse SDK generates the ZK proof; the relayer submits it on-chain. The behavioral fingerprint is stored locally (encrypted with AES-256-GCM, key as non-extractable `CryptoKey` in IndexedDB) for future re-verification. The identity is device-bound and ephemeral—clearing storage resets it. No on-chain Anchor, no portable Trust Score.
+Walletless mode is a secondary liveness tier for use cases that need a captcha-equivalent signal without onboarding a wallet. The behavioral fingerprint is stored locally (encrypted with AES-256-GCM, key as non-extractable `CryptoKey` in IndexedDB). The identity is device-bound and ephemeral; clearing storage resets it. No on-chain Anchor, no portable Trust Score.
 
 ---
 
@@ -272,7 +272,7 @@ Each wallet maps to exactly one Entros Anchor (enforced by PDA derivation). Crea
 2. k independent behavioral profiles, each sustained across regular re-verifications
 3. k × m verification fees over m re-verification cycles
 
-The Trust Score penalizes new accounts (age bonus starts at 0) and irregular patterns (regularity bonus requires consistent spacing). An adversary building 1,000 identities with Trust Score > 500 over 3 months incurs costs that exceed the value of most airdrop allocations.
+The Trust Score penalizes new accounts (age bonus starts at 0) and irregular patterns (regularity bonus requires consistent spacing). An adversary maintaining 1,000 identities to Trust Score > 500 over thirteen weeks at weekly cadence pays exactly 65 SOL in protocol fees (1,000 × 13 × 0.005 SOL), in addition to per-wallet rent and the per-identity compute of generating temporally consistent multi-modal sensor data that survives the active detection stack for the campaign duration. The defense is not absolute: a single high-value airdrop allocation may exceed this fee. Asymmetry compounds over time. The attacker pays continuously against an evolving detection stack, with no advance knowledge of which targets will materialise — most lucrative airdrops are unannounced, forcing speculative deployment months before any chance of recoupment. The equilibrium shifts against sustained Sybil farming at scale, not against any single attack.
 
 #### **6.4.1. Layered Sybil Resistance**
 
@@ -315,7 +315,7 @@ Temporal consistency applies from the second verification onward. Each returning
 2. **Device-bound consistency** *(returning walletless verification). Behavioral drift matches a device-local fingerprint. Signal strength: medium. Suitable for session authentication, content gating.*
 3. **Portable identity** *(wallet-connected with Trust Score). Persistent on-chain Anchor with months of behavioral consistency visible to all integrators. Signal strength: high. Suitable for airdrop eligibility, DAO governance, DeFi access controls.*
 
-In wallet-connected mode, the user pays a protocol fee per verification, creating direct economic cost for bot farms. In walletless mode, the integrator optionally funds verifications and controls abuse exposure through per-IP rate limiting and minimum Trust Score requirements. The protocol provides the signal; the integrator sets the threshold.
+In wallet-connected mode, the user pays the per-verification fee, creating direct economic cost for bot farms; integrators read on-chain state for free. The protocol provides the signal; the integrator sets the threshold.
 
 A bot that clears local storage before each walletless verification is perpetually at Tier 1—a liveness check with no temporal history. High-value integrations can require Tier 2 or Tier 3, making this strategy ineffective for anything beyond basic captcha equivalence.
 
