@@ -11,7 +11,7 @@ import { GlowCard } from "@/components/ui/glow-card";
 import { Bot, CheckCircle, ExternalLink, Loader2, Search } from "lucide-react";
 import { explorerUrl } from "@/lib/explorer";
 
-const TEST_AGENT = "m8b6ADwZUqL3JNazingq5VKJBmFeS8Rz1w487i4must";
+const TEST_AGENT = "CW9ogj3qxGxqdyMdsbVr6fkh6F9S5xYYkiNQir7LMW1M";
 
 function formatTimestamp(unix: number): string {
   return new Date(unix * 1000).toLocaleDateString("en-US", {
@@ -243,7 +243,7 @@ export function AgentsCheckSection() {
           }}
           className="text-cyan hover:text-foreground transition-colors font-mono"
         >
-          m8b6AD...4must
+          CW9ogj...LMW1M
         </button>{" "}
         (Entros test agent on devnet)
       </p>
