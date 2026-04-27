@@ -2,30 +2,10 @@ import type { IntegrationSnippet } from "./types";
 
 export const integrationSnippets: IntegrationSnippet[] = [
   {
-    mode: "walletless",
-    title: "Walletless verification",
-    description:
-      "Liveness-check tier for non-crypto users. The Pulse SDK generates a proof and submits via the Entros relayer. No wallet needed. The integrator optionally funds verifications via API key.",
-    code: `import { PulseSDK } from '@entros/pulse-sdk';
-
-const pulse = new PulseSDK({
-  cluster: 'devnet',
-  relayerUrl: 'https://relayer.entros-protocol.org',
-});
-
-// User completes Pulse challenge on your site
-const result = await pulse.verify();
-
-if (result.success) {
-  // result.commitment — the on-chain TBH hash
-  grantAccess(result.commitment);
-}`,
-  },
-  {
     mode: "wallet-connected",
     title: "Wallet-connected verification",
     description:
-      "The primary verification flow. The user pays a small protocol fee (~0.005 SOL) and signs the transaction with their wallet. Your app reads the result on-chain for free.",
+      "The primary verification flow. The user pays a small protocol fee (~0.005 SOL) and signs a single batched transaction. An on-chain Entros Anchor is minted or updated, a SAS attestation is written, and the Trust Score recomputes—all via the same wallet prompt. Your app reads the result on-chain for free.",
     code: `import { PulseSDK } from '@entros/pulse-sdk';
 import { useWallet, useConnection } from '@solana/wallet-adapter-react';
 
@@ -39,7 +19,29 @@ const result = await pulse.verify(
 );
 
 if (result.success) {
-  // result.txSignature — Solana transaction signature
+  // result.txSignature—Solana transaction signature
+  // result.commitment—Poseidon commitment written on-chain
+  grantAccess(result.commitment);
+}`,
+  },
+  {
+    mode: "walletless",
+    title: "Walletless verification",
+    description:
+      "Captcha-equivalent tier for non-crypto sign-up flows. The Pulse SDK generates a Groth16 proof and submits to the Entros relayer for liveness validation. No wallet, no transaction, no on-chain Anchor—device-bound and ephemeral. The integrator optionally funds verifications via API key.",
+    code: `import { PulseSDK } from '@entros/pulse-sdk';
+
+const pulse = new PulseSDK({
+  cluster: 'devnet',
+  relayerUrl: 'https://relayer.entros-protocol.org',
+});
+
+// User completes Pulse challenge on your site
+const result = await pulse.verify();
+
+if (result.success) {
+  // result.commitment—verification commitment hash
+  // No on-chain artifact; relayer-validated only.
   grantAccess(result.commitment);
 }`,
   },

@@ -17,8 +17,11 @@ export function IntegrationSection() {
         Two modes, one SDK
       </h2>
       <p className="mt-3 text-muted max-w-2xl">
-        Walletless mode for non-crypto users. Wallet-connected mode for DeFi
-        natives. Both produce the same on-chain proof.
+        Wallet-connected is the primary flow—a Groth16 ZK proof, a
+        persistent on-chain Entros Anchor, a SAS attestation, and a Trust
+        Score that compounds across re-verifications. Walletless is a
+        captcha-equivalent tier for sign-up flows—device-bound,
+        ephemeral, no on-chain identity written.
       </p>
 
       <div className="mt-12 grid grid-cols-1 gap-8 lg:grid-cols-2">

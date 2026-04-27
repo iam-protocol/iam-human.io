@@ -9,9 +9,9 @@ export const privacyGuarantees: PrivacyGuarantee[] = [
   },
   {
     icon: "database",
-    title: "No biometric storage",
+    title: "No raw biometric storage",
     description:
-      "Raw audio, motion, and touch data are destroyed after the Temporal Fingerprint is computed. No database holds voice samples or movement traces.",
+      "Raw audio, motion, and touch data are destroyed after the Temporal Fingerprint is computed. No server-side database holds voice samples or movement traces. Your encrypted fingerprint stays on your device for re-verification.",
   },
   {
     icon: "file-lock",

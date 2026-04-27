@@ -7,6 +7,7 @@ import { PulseChallenge } from "@/components/verify/pulse-challenge";
 import { ProvingView, VerifiedView, FailedView } from "@/components/verify/step-views";
 import { ShimmerButton } from "@/components/ui/shimmer-button";
 import { usePulse } from "@/components/providers/pulse-provider";
+import { generateWalletlessPhrase } from "@/data/walletless-phrase-words";
 import { Radio } from "lucide-react";
 
 function commitmentToHex(bytes: Uint8Array): string {
@@ -34,6 +35,16 @@ export function VerifyWalletless({
   const [processingStage, setProcessingStage] = useState("Extracting features...");
   const startingRef = useRef(false);
   const voicedFramesRef = useRef(0);
+  // Cosmetic phrase for the walletless preview. Walletless mode doesn't
+  // hit `/validate-features` so the phrase isn't bound to anything
+  // server-side—but since #89 v3 the wallet-connected flow shows real
+  // curated words, showing nonsense here would create a jarring style
+  // mismatch for researchers comparing the two modes. Refreshed at the
+  // top of every handleStart() so a Try-again gives a new phrase, and
+  // never re-rolls during a single capture.
+  const [walletlessPhrase, setWalletlessPhrase] = useState<string>(() =>
+    generateWalletlessPhrase(5),
+  );
 
   useEffect(() => {
     setHasMotion(navigator.maxTouchPoints > 0);
@@ -43,6 +54,10 @@ export function VerifyWalletless({
     if (startingRef.current) return;
     startingRef.current = true;
     setRequesting(true);
+    // Roll a fresh cosmetic phrase for this attempt. Try-again clicks
+    // re-enter handleStart and get a new phrase rather than reusing the
+    // previous one.
+    setWalletlessPhrase(generateWalletlessPhrase(5));
 
     try {
       voicedFramesRef.current = 0;
@@ -50,7 +65,7 @@ export function VerifyWalletless({
       const session = pulse.createSession(touchRef.current ?? document.body);
       sessionRef.current = session;
 
-      // Motion first — DeviceMotionEvent.requestPermission() requires an active
+      // Motion first—DeviceMotionEvent.requestPermission() requires an active
       // user gesture on iOS. getUserMedia does not. If audio goes first, the gesture
       // token is consumed by the mic dialog and motion is silently denied.
       if (hasMotion) {
@@ -74,7 +89,7 @@ export function VerifyWalletless({
         session.skipMotion();
       }
 
-      // Audio second — getUserMedia works without a gesture on secure origins
+      // Audio second—getUserMedia works without a gesture on secure origins
       try {
         let audioFrameCount = 0;
         await session.startAudio((rms) => {
@@ -200,6 +215,7 @@ export function VerifyWalletless({
         touchRef={touchRef}
         audioLevel={audioLevel}
         hasMotion={hasMotion}
+        phrase={walletlessPhrase}
       />
     );
   }

@@ -6,33 +6,33 @@ export const solutionCases: SolutionCase[] = [
     title: "Sybil-Resistant Airdrops",
     category: "DeFi",
     problem:
-      "Jupiter's 2024 airdrop was farmed by bot networks. In one presale, 1,100 of 1,530 wallets belonged to a single entity.",
+      "Jupiter's 2025 Jupuary distributed 700M JUP across 2M wallets, with multi-wallet farming patterns detected post-hoc and filtered after the fact. The 2026 Jupuary was delayed from January to May and reduced to 400M JUP. Meow has publicly stated the path forward is enforcing higher minimum thresholds and requiring proof of humanness before claims.",
     solution:
-      "Gate airdrop claims on Entros Anchor with a minimum Trust Score (e.g., 500+). Trust Score requires weeks of consistent re-verification, making bot farming slow and expensive. Progressive scoring means 100 verifications in one day scores less than weekly verifications over 3 months.",
+      "Gate airdrop claims on Entros Anchor with a minimum Trust Score (e.g., 500+). Trust Score requires sustained re-verification over time, making bot farming slow and expensive. Progressive scoring means 100 verifications in one day scores less than weekly verifications over 3 months.",
     example:
-      "Jupiter gates JUP claims with Entros. Each wallet needs Trust Score 200+ (at least two re-verifications with recent history). Farming one identity costs time; farming thousands costs months of sustained bot operation.",
+      "An airdrop integrator gates claims on Entros Trust Score (e.g., 200+ requires at least two re-verifications spaced over time). The protocol stays public and open; only verified humans pass the eligibility tier alongside existing token-balance and activity rules. Bot farms must fund wallets, pay per-verification SOL, and maintain Trust Score across separate days for every fake identity.",
   },
   {
     icon: "vote",
     title: "Verified Governance",
     category: "DAOs",
     problem:
-      "DAO governance where bots, scripts, and dormant wallets vote without a human present. No liveness check at the moment of voting.",
+      "Token-weighted governance fails at predictable moments. Mango Markets 2022: Avi Eisenberg used his MNGO position to vote a proposal keeping $47M of his own oracle-manipulation drain. A Solana DAO 2025: an attacker filed 10 self-funded proposals, each clearing token-balance quorum, draining ~$230K on the 10th. Chainalysis 10-DAO study: under 1% of holders control 90% of votes; turnout under 10%. Token weight ≠ community will.",
     solution:
-      "Voters must hold an Entros Anchor with minimum Trust Score and recent verification. The voter weight plugin checks liveness before every governance action. Bots and automated scripts are excluded.",
+      "Voters must hold an Entros Anchor with minimum Trust Score and recent verification. The Realms voter-weight plugin gates voting on verified-personhood, not token holdings. The whale's bag becomes one vote. Spam-quorum requires verified humans, not allocations.",
     example:
-      "Realms adds an Entros liveness gate to proposal voting. MNDE holders still submit proposals, but voters must prove human presence with Trust Score 100+ and verification within the last 30 days.",
+      "A DAO using Realms gates voting on Entros Trust Score, not just token holdings. One human, one vote—without document upload, without face scan, without a hardware visit. Plugin shipped on devnet, spl-governance compatible.",
   },
   {
     icon: "gamepad",
     title: "Fair Mints and Competitions",
-    category: "Gaming",
+    category: "NFT / DeFi",
     problem:
-      "NFT drops are exploited by farms. Trading competitions are gamed by wash-trading bots operating across hundreds of accounts.",
+      "NFT drops at launch are bot-minted at scale. Referral programs and trading competitions on perp DEXes get sybil-farmed across hundreds of accounts. Filtering wallets without forcing KYC is the unsolved layer.",
     solution:
-      "Mint gate: one human per allocation, verified by Anchor. Competition entry: require Anchor age > 30 days and recent verification. Short-lived bot accounts with zero trust cannot qualify. Each verification costs the user SOL, making large-scale bot farming economically punitive.",
+      "Mint gate: one human per allocation, verified by Anchor. Competition entry: require Anchor age > 30 days and recent verification. Short-lived bot accounts with zero trust cannot qualify. Each verification costs the user SOL, making large-scale bot farming economically punitive at the protocol layer.",
     example:
-      "Tensor requires Entros verification for mint allowlists. Drift trading competitions check Anchor age and Trust Score at entry.",
+      "An NFT marketplace can require Entros verification for mint allowlists on a per-collection basis. A perp DEX can gate referral-multiplier rewards or trading-competition entry on Trust Score above a threshold. Optional eligibility tier on top of existing rules—not a KYC replacement.",
   },
   {
     icon: "palette",
@@ -43,17 +43,17 @@ export const solutionCases: SolutionCase[] = [
     solution:
       "Creators register with an Entros Anchor. Collection metadata includes a cryptographic commitment to the creator's Anchor. Buyers verify provenance on-chain. The Anchor's Trust Score signals how long the creator has maintained their verified identity.",
     example:
-      "Metaplex collections include an Entros Anchor reference in metadata. Marketplaces display a 'Verified Creator' badge for Anchored artists.",
+      "A creator-tooling platform on Metaplex Core can include an Entros Anchor reference in collection metadata. Marketplaces displaying that metadata can render a 'Verified Creator' badge for Anchored artists. Token-2022 NonTransferable + Metaplex Core compose natively—the same primitive choices Entros's Agent Anchor uses today.",
   },
   {
     icon: "bot",
     title: "Bot Prevention",
     category: "Social",
     problem:
-      "Referral platforms and decentralized networks are overrun by bot accounts farming rewards and inflating metrics.",
+      "Reward platforms and content distribution apps are overrun by bot accounts farming rewards, inflating engagement metrics, and crowding out real users.",
     solution:
-      "Require Entros verification at account creation or reward claim. Entropy scoring and minimum Hamming distance constraints detect the synthetic inputs that scripted bots produce. Walletless mode works as a drop-in captcha replacement for web platforms.",
+      "Require Entros verification at account creation or reward claim. Entropy scoring per modality and minimum Hamming distance constraints catch the synthetic inputs scripted bots produce. Walletless mode works as a captcha replacement for sign-up flows where the bot floor is the problem rather than on-chain economic loss.",
     example:
-      "DRiP gates referral rewards on Entros Anchors. Helium requires hotspot operators to prove human operation, raising the cost of running bot networks.",
+      "A creator-rewards platform can gate reward claims on Entros Trust Score. A web platform can use walletless mode as a captcha-equivalent at signup—no wallet required, device-bound liveness check, drop-in SDK.",
   },
 ];
