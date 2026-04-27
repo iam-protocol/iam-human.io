@@ -13,9 +13,9 @@ export const useCases: UseCase[] = [
     icon: "vote",
     title: "Verified Governance",
     problem:
-      "DAO governance where bots and dormant wallets vote without a human present.",
+      "Token-weighted governance is plutocracy by default. A wealthy attacker can ratify their own theft (Mango 2022) or spam-clear quorum with self-funded proposals.",
     solution:
-      "Verified humans only. Token-weighted governance with a liveness gate.",
+      "Realms voter-weight plugin gates voting on verified-personhood Trust Score, not token holdings. One human, one vote—without document upload or face scan.",
   },
   {
     icon: "bot",
@@ -23,6 +23,6 @@ export const useCases: UseCase[] = [
     problem:
       "Social feeds, marketplaces, and games overrun by automated accounts.",
     solution:
-      "Require Entros verification at signup. Kill bots without killing privacy.",
+      "Require Entros verification at signup. Filter bots without collecting identity or hardware data.",
   },
 ];

@@ -29,9 +29,9 @@ export const trustSignals: TrustSignal[] = [
   },
   {
     icon: "globe",
-    name: "Integration Partners",
-    description: "Five protocols targeted for devnet pilot.",
-    detail: "Conversations with Jupiter, Marinade, Tensor, Drift, and Realms.",
+    name: "Integration Targets",
+    description: "Mapped Solana ecosystem fit.",
+    detail: "Sequenced outreach plan covers Jupiter, Drift, 8004 Labs, Metaplex, Realms-using DAOs, Marinade, Tensor, Magic Eden, and Phantom—each with a specific integration angle. Goal: one signed-up integrator pilot before mainnet.",
     href: "/solutions",
     cta: "See use cases",
     gridArea: "lg:col-start-1 lg:col-end-2 lg:row-start-3 lg:row-end-4",
