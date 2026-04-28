@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * AsciiSpiral — animated 3D rotating disk rendered as monospace text.
+ * AsciiSpiral—animated 3D rotating disk rendered as monospace text.
  *
  * The frame data is a 75-frame sequence at 80×80 cells, encoded as
  * gzipped base64 in `ascii-spiral-data.ts` (~30KB). Density characters
@@ -106,11 +106,9 @@ export function AsciiSpiral({ className }: AsciiSpiralProps) {
         // 80-column monospace block. leading-[1] keeps rows tight so the
         // disk shape stays close to its original terminal aspect.
         "select-none whitespace-pre font-mono leading-[1] text-cyan",
-        // .ascii-spiral (globals.css) adds a sub-pixel text-shadow stack
-        // in light mode only — thickens the glyphs against the cream bg,
-        // no-op in dark mode.
-        "ascii-spiral",
-        // Glyph size is tiny on purpose — at 80 cols × 80 rows, even a
+        // Light-mode glyph thickening (no-op in dark mode).
+        "ascii-art-bright",
+        // Glyph size is tiny on purpose—at 80 cols × 80 rows, even a
         // 6px glyph produces a ~480px-wide spiral. We size to fit comfortably
         // in the right half of the split hero (~520px column).
         "text-[3.5px] sm:text-[4.5px] md:text-[5px] lg:text-[5.5px] xl:text-[6px]",
