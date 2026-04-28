@@ -36,6 +36,11 @@ export function AsciiFingerprint({ className }: AsciiFingerprintProps) {
 
     const tierBuf = new Uint8Array(COLS * ROWS);
     const charBuf = new Uint8Array(COLS * ROWS);
+    // Per-cell flag: cell is currently inside the radial scan band.
+    // Decoupled from tier so the streak can have its own color treatment
+    // — important in light mode where opacity-only contrast washes out
+    // and the sweep needs a non-cyan accent to read against #FAFAF8.
+    const streakBuf = new Uint8Array(COLS * ROWS);
 
     let t = 0;
     let prev = performance.now();
@@ -55,6 +60,7 @@ export function AsciiFingerprint({ className }: AsciiFingerprintProps) {
 
       tierBuf.fill(0);
       charBuf.fill(0);
+      streakBuf.fill(0);
 
       const scanR = (t * SCAN_SPEED) % 1.4;
 
@@ -102,39 +108,66 @@ export function AsciiFingerprint({ className }: AsciiFingerprintProps) {
             tierBuf[idx] = tierVal;
             charBuf[idx] = ridge > 0.7 ? 0 : 1;
           }
+          // Mark the cell as actively streaking when the radial scan ring
+          // passes near it. Threshold 0.3 keeps the band visually
+          // distinct without being so wide it covers half the spiral.
+          if (scanBoost > 0.3) streakBuf[idx] = 1;
         }
       }
 
       let html = "";
-      let lastTier = -1;
+      // Encode (tier, streak) into a single key so the rendering loop only
+      // emits a new <span> when either dimension changes. Streak is a
+      // 1-bit flag layered on top of the 4 tiers.
+      let lastKey = -1;
       for (let r = 0; r < ROWS; r++) {
         for (let c = 0; c < COLS; c++) {
           const idx = r * COLS + c;
           const v = tierBuf[idx]!;
           if (v === 0) {
-            if (lastTier !== -1) html += "</span>";
+            if (lastKey !== -1) html += "</span>";
             html += " ";
-            lastTier = -1;
+            lastKey = -1;
             continue;
           }
-          if (v !== lastTier) {
-            if (lastTier !== -1) html += "</span>";
-            const cls =
-              v === 1
-                ? "text-cyan/25"
-                : v === 2
-                  ? "text-cyan/50"
-                  : v === 3
-                    ? "text-cyan/75"
-                    : "text-cyan";
+          const streak = streakBuf[idx]!;
+          const key = (streak << 3) | v;
+          if (key !== lastKey) {
+            if (lastKey !== -1) html += "</span>";
+            // Light mode: streak cells render in foreground so the
+            // sweep reads against the off-white background. Dark mode:
+            // streak cells fall back to the tier-based cyan opacity
+            // (identical to baseline at the same tier) so the original
+            // gradient sweep — driven by the level-math tier boost in
+            // the inner loop — is preserved.
+            let cls: string;
+            if (streak === 1) {
+              cls =
+                v === 1
+                  ? "text-foreground dark:text-cyan/25"
+                  : v === 2
+                    ? "text-foreground dark:text-cyan/50"
+                    : v === 3
+                      ? "text-foreground dark:text-cyan/75"
+                      : "text-foreground dark:text-cyan";
+            } else {
+              cls =
+                v === 1
+                  ? "text-cyan/40 dark:text-cyan/25"
+                  : v === 2
+                    ? "text-cyan/60 dark:text-cyan/50"
+                    : v === 3
+                      ? "text-cyan/80 dark:text-cyan/75"
+                      : "text-cyan";
+            }
             html += `<span class="${cls}">`;
           }
           html += charBuf[idx] === 1 ? "1" : "0";
-          lastTier = v;
+          lastKey = key;
         }
-        if (lastTier !== -1) {
+        if (lastKey !== -1) {
           html += "</span>";
-          lastTier = -1;
+          lastKey = -1;
         }
         if (r < ROWS - 1) html += "\n";
       }
