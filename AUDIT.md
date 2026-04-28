@@ -1,6 +1,14 @@
 # Entros Protocol — Security & Quality Audit Tracker
 
-Last updated: 2026-04-21
+Last updated: 2026-04-28
+
+**Recent activity (2026-04-28):** Cross-repo internal hardening pass shipped
+across five repositories (validator, executor, circuits, governance plugin,
+client SDK). Improvements: tighter HTTP-boundary input validation, constant-time
+API-key comparison aligned across services, hardened error reporting paths,
+resource-cleanup hygiene in client sensor capture, and stricter type guards on
+local storage. On-chain governance plugin redeployed in-place (program ID
+unchanged, all existing state preserved). No public-API breaking changes.
 
 Running log of resolved bugs, hardening items, and known limitations across
 the protocol's repositories.
