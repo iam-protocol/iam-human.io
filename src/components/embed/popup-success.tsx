@@ -3,7 +3,10 @@
 import { useEffect } from "react";
 import { CheckCircle } from "lucide-react";
 
-const CLOSE_DELAY_MS = 1500;
+// Matches PopupFailure timing for visual symmetry. Long enough for the
+// user to register the confirmation; short enough that the post-12s-capture
+// flow doesn't feel sluggish at the end.
+const CLOSE_DELAY_MS = 2500;
 
 const closePopupWindow = () => {
   if (typeof window !== "undefined") window.close();
