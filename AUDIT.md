@@ -92,16 +92,6 @@ below).
 - [x] **ScriptProcessorNode deprecated** — Documented in audio.ts with migration note for v1.0. All current browsers support it. Fixed 2026-03-25.
 - [x] **In-memory localStorage fallback lost on page reload** — Documented in anchor.ts. Private browsing users must re-enroll each session. Fixed 2026-03-25.
 
-### Scaling roadmap
-
-Items tracking the protocol's progression from devnet pilot to ecosystem-scale
-production. Each has been advanced significantly in recent work; the third
-remains in active design as a future architectural improvement.
-
-- [x] **Persistent cross-wallet registry** — Sybil fingerprint registry runs on Postgres in production with row-level TTL eviction, atomic check-and-register via SERIALIZABLE isolation, and bounded retry on serialization-failure errors. Survives service restarts and seed rotations. Production validator gates startup on `DATABASE_URL` and refuses to boot without it. Shipped 2026-05-01.
-- [x] **On-chain identity migration** — `migrate_identity` instruction in `entros_anchor` lets a user move an established identity (Trust Score, verification history, recent timestamps) to a new wallet via a two-signer authorization pattern. Deployed on devnet alongside the rest of the identity program; the policy layer around it (cooldowns, score-laundering protections) is covered in the [public roadmap](https://entros.io/docs/roadmap/medium-term#reputation-portability).
-- [~] **Population-scale Sybil scoring** — The current Hamming-distance gate works correctly at the devnet pilot scale. Scaling to ecosystem populations introduces the 1:N false-match-rate challenge that every behavioral biometric system faces; the planned approach moves from a binary gate to probabilistic scoring with scoped comparison and ensemble signals across behavioral, attestation, and cross-protocol data. Roadmap detail in the [medium-term scaling considerations](https://entros.io/docs/roadmap/medium-term#scaling-considerations).
-
 ### SDK Error Message Quality (added 2026-04-16)
 
 - [x] **SDK error messages lacked actionable guidance for integrators** — 24 error messages rewritten to include the action the integrator should take next (e.g. "Call stopAudio() before starting a new capture"). Session state-machine errors, audio capture failures, IDL fetch errors, relayer errors, and agent attestation errors all now name the expected next call. Diagnostic context preserved where useful. Shipped in 0.7.12. Fixed 2026-04-16.
@@ -279,6 +269,18 @@ kept private per responsible-disclosure convention.
 - `axum` 0.8, `tower-http` 0.6, `tokio` 1.x, `dashmap` 6 — current major versions
 - `react` 19.2.4, `next` 16.2.0, `tailwindcss` v4 — latest
 - Rust 1.92, Solana CLI 3.0.13, Node 24, Circom 2.2.3 — all current
+
+---
+
+## Scaling roadmap
+
+Items tracking the protocol's progression from devnet pilot to ecosystem-scale
+production. Each has been advanced significantly in recent work; the third
+remains in active design as a future architectural improvement.
+
+- [x] **Persistent cross-wallet registry** — Sybil fingerprint registry runs on Postgres in production with row-level TTL eviction, atomic check-and-register via SERIALIZABLE isolation, and bounded retry on serialization-failure errors. Survives service restarts and seed rotations. Production validator gates startup on `DATABASE_URL` and refuses to boot without it. Shipped 2026-05-01.
+- [x] **On-chain identity migration** — `migrate_identity` instruction in `entros_anchor` lets a user move an established identity (Trust Score, verification history, recent timestamps) to a new wallet via a two-signer authorization pattern. Deployed on devnet alongside the rest of the identity program; the policy layer around it (cooldowns, score-laundering protections) is covered in the [public roadmap](https://entros.io/docs/roadmap/medium-term#reputation-portability).
+- [~] **Population-scale Sybil scoring** — The current Hamming-distance gate works correctly at the devnet pilot scale. Scaling to ecosystem populations introduces the 1:N false-match-rate challenge that every behavioral biometric system faces; the planned approach moves from a binary gate to probabilistic scoring with scoped comparison and ensemble signals across behavioral, attestation, and cross-protocol data. Roadmap detail in the [medium-term scaling considerations](https://entros.io/docs/roadmap/medium-term#scaling-considerations).
 
 ---
 
