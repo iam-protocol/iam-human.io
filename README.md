@@ -8,7 +8,7 @@ Prove you're human in 12 seconds, on your device.
 Vouch for the AI agents you operate.
 Build Trust. Gate any Solana dApp.
 
-[Demo](https://entros.io/verify) · [Paper](https://entros.io/paper) · [Docs](https://entros.io/docs) · [Security](https://entros.io/security)
+[Home](https://entros.io) · [Demo](https://entros.io/verify) · [Paper](https://entros.io/paper) · [Docs](https://entros.io/docs) · [Security](https://entros.io/security)
 
 </div>
 
