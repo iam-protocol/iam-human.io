@@ -23,6 +23,6 @@ export const useCases: UseCase[] = [
     problem:
       "Social feeds, marketplaces, and games overrun by automated accounts.",
     solution:
-      "Require Entros verification at signup. Filter bots without collecting identity or hardware data.",
+      "Filter bots at signup, or gate access to agents with a verified human operator and Trust Score. No identity or hardware data collected.",
   },
 ];
