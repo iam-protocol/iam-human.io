@@ -31,7 +31,7 @@ The first verification is fully hardened on its own. Every capture, first or rep
 - **Phrase binding.** Audio is transcribed by Whisper and word-distance-matched against the server-issued challenge phrase. Wrong words, wrong phrase, fail.
 - **Entropy and variance analysis.** Per-modality Shannon entropy and variance floors reject constant or low-information feature vectors. Zeros, noise, flat streams fail the math.
 - **Voice synthesis fingerprinting.** Jitter and shimmer floors/ceilings, HNR bounds, voicing-ratio bounds, F0 delta variance—measured on every dimension where synthesized speech is statistically distinct from a human larynx.
-- **Cross-modal temporal coupling.** Voice F0 and hand acceleration are causally coupled within a tight temporal window in real humans (Pouw 2025). A bot stitching audio onto procedural motion fails the cross-correlation peak.
+- **Cross-modal temporal coupling.** Voice F0 and hand acceleration are causally coupled within a tight temporal window in real humans. A bot stitching audio onto procedural motion fails the cross-correlation peak.
 - **Sybil registry scan.** Your fingerprint is checked against every other verified user's, regardless of wallet. Biological collisions across wallets are caught.
 - **Calibration-attack noise.** Controlled noise on borderline outcomes near every threshold check, designed to defeat attackers probing for boundary-crafted inputs.
 
