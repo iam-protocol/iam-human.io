@@ -371,6 +371,14 @@ export function IntegrateGuide() {
                 <code className="font-mono text-cyan">verifyEntrosAttestation()</code>.
                 No escrow, no API keys, no billing relationship.
               </p>
+              <p className="mt-6 text-sm leading-relaxed text-foreground/55 md:text-base">
+                First verification additionally requires ~0.013 SOL of
+                one-time Solana account rent for the user's Identity
+                Anchor (mint, token account, identity state). Refundable
+                when accounts are closed. Subsequent verifications cost
+                only the protocol fee plus ~0.002 SOL per new verification
+                record (also refundable).
+              </p>
               <p className="mt-6 text-base leading-relaxed text-foreground/65 md:text-lg">
                 You get verified humans. The user pays to prove they're
                 human. The protocol gets a recurring fee that funds
