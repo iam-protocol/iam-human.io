@@ -14,8 +14,8 @@ export function WhySolanaSection() {
         </span>
 
         <h2 className="mt-6 max-w-2xl font-display text-3xl font-medium tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
-          Built for the chain
-          where machines already trade<span className="text-cyan">.</span>
+          Designed for the chain where
+          agents already interact and transact<span className="text-cyan">.</span>
         </h2>
 
         {/* Hairline grid: bg-border on the outer container shows through
