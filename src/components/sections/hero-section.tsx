@@ -8,8 +8,13 @@ import { AsciiSpiral } from "@/components/ui/ascii-spiral";
  * Right: ASCII spiral animation.
  */
 export function HeroSection() {
+  // `flex-col-reverse` flips DOM source-order rendering on mobile so the
+  // ASCII spiral appears above the headline + CTAs (matches the Scale.com-
+  // style mobile pattern: graphic on top, content below). `lg:flex-row`
+  // re-enters the desktop split-layout by source order: text left, spiral
+  // right. Desktop layout is unchanged from the original.
   return (
-    <section className="relative mx-auto flex w-full max-w-7xl flex-col gap-12 px-6 pt-28 pb-6 md:pt-36 md:pb-12 lg:min-h-[calc(100vh-4rem)] lg:flex-row lg:items-center lg:gap-12 lg:pt-24 lg:pb-24">
+    <section className="relative mx-auto flex w-full max-w-7xl flex-col-reverse gap-12 px-6 pt-28 pb-6 md:pt-36 md:pb-12 lg:min-h-[calc(100vh-4rem)] lg:flex-row lg:items-center lg:gap-12 lg:pt-24 lg:pb-24">
       {/* Left column—copy + CTAs */}
       <div className="relative z-10 flex flex-col lg:w-1/2 lg:max-w-2xl">
         <h1 className="font-display text-5xl font-medium leading-[1.02] tracking-[-0.02em] text-foreground md:text-6xl lg:text-7xl">
@@ -59,13 +64,28 @@ export function HeroSection() {
           (a flex item with content-driven width) sit centered in the column
           on every breakpoint.
 
-          Explicit min-height matches the spiral's eventual rendered height
-          at each breakpoint (80 rows × font-size: 80×3.5px=280, 80×4.5px=360,
-          80×5px=400, 80×5.5px=440, 80×6px=480). This reserves the layout
-          space before the async payload decodes, eliminating the CLS that
-          would otherwise shove the headline upward on first paint. */}
-      <div className="relative flex h-[280px] flex-1 items-center justify-center sm:h-[360px] md:h-[400px] lg:h-[440px] lg:w-1/2 xl:h-[480px]">
-        <AsciiSpiral className="opacity-95" />
+          Explicit height matches the spiral's eventual rendered height at
+          each breakpoint (80 rows × font-size: 80×2.5px=200 on mobile so
+          the stacked layout fits the headline + CTAs above the fold;
+          80×4.5px=360, 80×5px=400, 80×5.5px=440, 80×6px=480 from sm up).
+          Reserves the layout space before the async payload decodes,
+          eliminating the CLS that would otherwise shove the headline upward
+          on first paint.
+
+          `lg:flex-1` only applies at lg+ where the layout is `flex-row`. On
+          smaller breakpoints (`flex-col-reverse`) we deliberately omit
+          `flex-1` so the spiral container uses its natural height instead
+          of growing to fill all available vertical space — without this,
+          the spiral would consume most of the mobile viewport and push
+          headline + CTAs below the fold. */}
+      <div className="relative flex h-[200px] items-center justify-center sm:h-[360px] md:h-[400px] lg:h-[440px] lg:w-1/2 lg:flex-1 xl:h-[480px]">
+        {/* `rotate-90 lg:rotate-0` orients the spiral sideways on mobile so
+            its visual axis runs horizontally (fits the screen's wider
+            dimension). Desktop stays at 0° so the split-hero layout is
+            unchanged. The CSS box bounds are identical post-rotation
+            (square 80×80 ASCII grid), so layout doesn't shift — only the
+            rendered orientation does. */}
+        <AsciiSpiral className="opacity-95 rotate-90 lg:rotate-0" />
       </div>
     </section>
   );
