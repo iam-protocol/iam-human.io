@@ -4,7 +4,7 @@ import { pageMetadata } from "@/lib/page-metadata";
 export const metadata = pageMetadata({
   title: "Verify",
   description:
-    "Prove you are human with Entros Protocol. Wallet-connected verification on Solana devnet, with a no-wallet capture preview.",
+    "Prove you are human with Entros Protocol. Twelve seconds of voice, motion, and touch—anchored on Solana devnet, readable by every dApp.",
   path: "/verify",
 });
 
@@ -24,8 +24,7 @@ export default function Verify() {
           <p className="mx-auto mt-7 max-w-2xl text-base leading-relaxed text-foreground/65 md:mt-8 md:text-lg">
             Twelve seconds of voice, motion, and touch. Connect your Solana
             wallet to mint an Entros Anchor with a portable, on-chain Trust
-            Score. A no-wallet preview is available for trying the capture
-            flow.
+            Score readable by every dApp.
           </p>
         </div>
       </section>

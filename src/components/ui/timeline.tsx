@@ -72,9 +72,13 @@ export function Timeline({ data }: { data: TimelineEntry[] }) {
       // Walk each circle's offsetParent chain up to the timeline
       // container, summing offsetTop. Gives the circle's exact y
       // within the line's coordinate space, including the sticky
-      // wrapper offset and per-breakpoint padding. Trigger fires when
-      // the line front has fully passed the 40px marker wrapper—
-      // "through and past the dot".
+      // wrapper offset and per-breakpoint padding. Trigger fires the
+      // moment the line front reaches the marker wrapper's top edge
+      // (no +40 buffer) — the dot lights as soon as its section starts
+      // being scrolled into, not after the line has fully passed
+      // through. This matters most on mobile, where sections are
+      // tighter and a 40px buffer was a meaningful fraction of total
+      // section height, causing the dot to fill only near the end.
       //
       // Special case: the first dot has no preceding section to
       // traverse, so it activates the instant the timeline scrolls
@@ -89,7 +93,7 @@ export function Timeline({ data }: { data: TimelineEntry[] }) {
           y += el.offsetTop;
           el = el.offsetParent as HTMLElement | null;
         }
-        return y + 40;
+        return y;
       });
       setThresholds(ts);
     }

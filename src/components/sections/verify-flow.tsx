@@ -1,14 +1,22 @@
 "use client";
 
-import { Component, useReducer, useState } from "react";
-import type { VerifyMode } from "@/components/verify/types";
+import { Component, useReducer } from "react";
 import {
   verifyReducer,
   initialState,
 } from "@/components/verify/verify-state-machine";
-import { VerifyModeToggle } from "./verify-mode-toggle";
-import { VerifyWalletless } from "./verify-walletless";
 import { VerifyWalletConnected } from "./verify-wallet-connected";
+
+// Walletless preview removed from the public verify route 2026-05-06: the
+// preview path didn't run real validation, so a user could pass by being
+// silent for 12 seconds — the impression that creates is incompatible with
+// the article's claims about behavioral verification. Driving every tester
+// through the wallet-connected (real-validation) path is the only honest
+// signal. The walletless components (`verify-walletless.tsx`,
+// `verify-mode-toggle.tsx`) and the `VerifyMode` type alias remain in the
+// codebase so the path can be restored as a clearly-labelled product demo
+// later (or upgraded to a real-validation walletless tier; see master-list
+// for the v1.1 follow-up).
 
 class VerifyErrorBoundary extends Component<
   { children: React.ReactNode; onError: () => void },
@@ -43,15 +51,7 @@ class VerifyErrorBoundary extends Component<
 }
 
 export function VerifyFlow() {
-  const [mode, setMode] = useState<VerifyMode>("wallet-connected");
   const [state, dispatch] = useReducer(verifyReducer, initialState);
-
-  function handleModeChange(newMode: VerifyMode) {
-    if (state.step !== "idle") {
-      dispatch({ type: "RESET" });
-    }
-    setMode(newMode);
-  }
 
   function handleBoundaryError() {
     dispatch({ type: "RESET" });
@@ -59,10 +59,6 @@ export function VerifyFlow() {
 
   return (
     <div className="space-y-8">
-      <div className="flex justify-center">
-        <VerifyModeToggle mode={mode} onChange={handleModeChange} />
-      </div>
-
       <div className="relative mx-auto flex min-h-[460px] max-w-xl flex-col justify-center border border-border bg-surface px-8 py-10">
         <span className="absolute left-0 top-0 h-3 w-3 border-l border-t border-cyan/70" aria-hidden />
         <span className="absolute right-0 top-0 h-3 w-3 border-r border-t border-cyan/70" aria-hidden />
@@ -70,11 +66,7 @@ export function VerifyFlow() {
         <span className="absolute bottom-0 right-0 h-3 w-3 border-b border-r border-cyan/70" aria-hidden />
 
         <VerifyErrorBoundary onError={handleBoundaryError}>
-          {mode === "walletless" ? (
-            <VerifyWalletless state={state} dispatch={dispatch} />
-          ) : (
-            <VerifyWalletConnected state={state} dispatch={dispatch} />
-          )}
+          <VerifyWalletConnected state={state} dispatch={dispatch} />
         </VerifyErrorBoundary>
       </div>
     </div>
