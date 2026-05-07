@@ -11,17 +11,16 @@ export function ProblemSection() {
         </span>
 
         <h2 className="mt-6 font-display text-3xl font-medium tracking-tight text-foreground md:text-5xl md:leading-[1.05]">
-          Wallets are free<span className="text-cyan">.</span>{" "}
-          Proving a returning human operates one is still an open
-          problem<span className="text-cyan">.</span>
+          99.99% of Solana transactions will be agent-driven within two years<span className="text-cyan">.</span>
         </h2>
 
         <p className="mt-6 max-w-2xl text-base leading-relaxed text-foreground/65 md:text-lg">
-          Document checks and static biometrics verify a moment.
-          Airdrops, governance, and agent accountability need something
-          that verifies over time. Entros is the behavioral layer—continuous
-          proof-of-personhood that runs in any browser, keeps raw data on
-          the device, and compounds trust across every dApp on Solana.
+          At that scale, identifying a returning human across time
+          becomes the foundational signal for airdrops, governance, and
+          agent accountability. Static biometrics verify a moment.
+          Entros is the behavioral layer—continuous proof-of-personhood
+          that runs in any browser, keeps raw data on the device, and
+          compounds trust across every dApp on Solana.
         </p>
       </div>
     </section>
