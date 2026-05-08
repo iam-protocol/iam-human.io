@@ -17,6 +17,7 @@ import {
 import { ResetBaselineDialog } from "@/components/verify/reset-baseline-dialog";
 import { WalletConnectButton } from "@/components/ui/wallet-connect-button";
 import { usePulse } from "@/components/providers/pulse-provider";
+import { useWalletError } from "@/components/providers/wallet-provider";
 import { Wallet } from "lucide-react";
 
 function commitmentToHex(bytes: Uint8Array): string {
@@ -73,6 +74,11 @@ export function VerifyWalletConnected({
   const { connected, wallet, publicKey, disconnect } = useWallet();
   const { connection } = useConnection();
   const pulse = usePulse();
+  // Wallet adapter error surface (e.g., Phantom devnet mismatch, Android MWA
+  // dead-ends). Latest message is rendered as a banner above the Connect
+  // button; clears automatically when the wallet successfully connects.
+  const { lastError: walletError, clearError: clearWalletError } =
+    useWalletError();
   const touchRef = useRef<HTMLDivElement>(null);
   const sessionRef = useRef<PulseSession | null>(null);
   const [audioLevel, setAudioLevel] = useState(0);
@@ -122,6 +128,15 @@ export function VerifyWalletConnected({
   useEffect(() => {
     setHasMotion(navigator.maxTouchPoints > 0);
   }, []);
+  // Drop the surfaced wallet error once the wallet successfully connects.
+  // Keeps the banner from lingering after a retry that resolved the issue
+  // (e.g., user toggled Phantom to devnet and reconnected). `clearWalletError`
+  // is stable across the provider's lifetime (memoized with []), so it
+  // doesn't belong in the dep array.
+  useEffect(() => {
+    if (connected) clearWalletError();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- clearWalletError is provider-stable
+  }, [connected]);
   useEffect(() => {
     if (typeof navigator === "undefined" || !navigator.permissions?.query) {
       return;
@@ -443,6 +458,23 @@ export function VerifyWalletConnected({
           Connect your Solana wallet to verify with full self-custody. You sign
           the verification transaction directly.
         </p>
+        {walletError && (
+          <div className="mx-auto max-w-sm rounded-lg border border-danger/30 bg-danger/5 px-4 py-3">
+            <div className="flex items-start gap-2">
+              <p className="flex-1 text-left text-xs text-foreground/70 leading-relaxed">
+                Wallet didn&apos;t connect: {walletError}
+              </p>
+              <button
+                type="button"
+                onClick={clearWalletError}
+                className="text-xs text-foreground/40 hover:text-foreground transition-colors"
+                aria-label="Dismiss wallet error"
+              >
+                &times;
+              </button>
+            </div>
+          </div>
+        )}
         <WalletConnectButton className="!rounded-full !border !border-border !bg-surface !text-foreground !font-mono !text-sm" />
       </div>
     );
