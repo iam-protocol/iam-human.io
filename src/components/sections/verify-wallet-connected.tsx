@@ -37,6 +37,32 @@ function commitmentToHex(bytes: Uint8Array): string {
 // catches drift, but pre-flight false-negatives waste a capture cycle.
 const RESET_COOLDOWN_SECS = 7 * 24 * 60 * 60;
 
+// Soft-reject retry budget (master-list #94). When attemptsUsed < MAX_ATTEMPTS
+// and the server returns a user-recoverable reason, the client routes to
+// soft_failed (retry available) instead of failed (hard stop). Capped to
+// bound bot retry benefit per wallet — the server-side per-wallet cap
+// (master-list #94 C4) enforces this across wallet refreshes; this client
+// counter just drives the UX inside a session.
+const MAX_ATTEMPTS = 3;
+
+// Set of safe-to-reveal validator reasons that route to the soft-fail
+// retry UX instead of the hard-fail page. Must stay in sync with
+// `entros-validation::ReasonCode::safe_label` (the server-side allowlist)
+// and `SOFT_HINT` keys in `step-views.tsx` (the client-side hint
+// dictionary). Drift in either direction means a soft-rejectable reason
+// either escapes to hard-fail (annoying for the user) or slips into
+// soft-fail without a hint (confusing). The trailing entry
+// `validation_unavailable` is a client-side reason emitted by pulse-sdk
+// when /validate-features is unreachable (network failure, timeout,
+// abort) — treated as transient.
+const RETRYABLE_REASONS: ReadonlySet<string> = new Set([
+  "variance_floor",
+  "entropy_bounds",
+  "temporal_coupling_low",
+  "phrase_content_mismatch",
+  "validation_unavailable",
+]);
+
 export function VerifyWalletConnected({
   state,
   dispatch,
@@ -75,15 +101,9 @@ export function VerifyWalletConnected({
   // capture-completion handler can choose between verify vs reset paths
   // without reading the reducer state (which may race the handler).
   const intentRef = useRef<"verify" | "reset">("verify");
-  // Soft-reject retry budget (master-list #94). Counts attempts taken in the
-  // current session—incremented at the top of handleStart, reset to 0 on
-  // RESET / VERIFICATION_SUCCESS. When attemptsUsed < MAX_ATTEMPTS and the
-  // server returns a user-recoverable reason, we route to soft_failed (retry
-  // available) instead of failed (hard stop). Capped to bound bot retry
-  // benefit per wallet—the server-side per-wallet cap (master-list #94 C4)
-  // enforces this across wallet refreshes; this client counter just drives
-  // the UX inside a session.
-  const MAX_ATTEMPTS = 3;
+  // Per-session retry counter (incremented at the top of handleStart, reset
+  // to 0 on RESET / VERIFICATION_SUCCESS). The cap and retryable-reason set
+  // are hoisted to module scope at the top of this file.
   const attemptsUsedRef = useRef(0);
 
   // Microphone permission pre-flight. Browsers that previously denied
@@ -345,23 +365,6 @@ export function VerifyWalletConnected({
     const timeoutPromise = new Promise<never>((_, reject) =>
       setTimeout(() => reject(new Error("Proof generation timed out. Please try again.")), PROOF_TIMEOUT_MS)
     );
-
-    // Set of safe-to-reveal validator reasons that route to the soft-fail
-    // retry UX instead of the hard-fail page. Must stay in sync with
-    // `entros-validation::ReasonCode::safe_label` (the server-side allowlist)
-    // and `SOFT_HINT` keys in `step-views.tsx` (the client-side hint
-    // dictionary). Drift in either direction means a soft-rejectable reason
-    // either escapes to hard-fail (annoying for the user) or slips into
-    // soft-fail without a hint (confusing).
-    const RETRYABLE_REASONS = new Set([
-      "variance_floor",
-      "entropy_bounds",
-      "temporal_coupling_low",
-      "phrase_content_mismatch",
-      // Client-side reason emitted by pulse-sdk when /validate-features is
-      // unreachable (network failure, timeout, abort). Treated as transient.
-      "validation_unavailable",
-    ]);
 
     Promise.race([proofPromise, timeoutPromise])
       .then((result) => {
