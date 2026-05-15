@@ -339,7 +339,22 @@ function isOpaqueRejectionError(error: string): boolean {
     e.includes("sendtransactionpreflightfailure") ||
     e.includes("@solana/errors") ||
     e.includes("custom program error") ||
-    e.includes("transaction simulation failed")
+    e.includes("transaction simulation failed") ||
+    // Upstream-failure patterns from executor-node when the validation-
+    // service is unreachable (crash loop, restart window, network blip).
+    // Empirical instance (2026-05-15): validator OOM-crashed during a
+    // whitening attempt; executor returned the reqwest "error sending
+    // request for url ([internal])" envelope verbatim. Routing these
+    // through validation-rejected gives the user the same polished
+    // surface without revealing infrastructure detail. The sanitizer in
+    // verify-wallet-connected.tsx strips the URL itself; this routes the
+    // category. Both are defense-in-depth — either alone closes the leak,
+    // both together survive a future regression in the other.
+    e.includes("error sending request") ||
+    e.includes("502 bad gateway") ||
+    e.includes("503 service unavailable") ||
+    e.includes("504 gateway timeout") ||
+    e.includes("upstream connect error")
   );
 }
 
