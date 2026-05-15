@@ -89,6 +89,18 @@ function sanitizeErrorMessage(message: string): string {
   // Replace any standalone long base58 sequence (chunk hashes, transaction
   // signatures, raw account addresses serialized verbatim) with a placeholder.
   sanitized = sanitized.replace(/\b[1-9A-HJ-NP-Za-km-z]{40,}\b/g, "[blob]");
+  // Strip Railway internal service URLs (and any `*.railway.internal` host)
+  // that leak into reqwest-format upstream-failure messages from
+  // executor-node when the validation-service is unreachable. Empirical
+  // leak (2026-05-15): "error sending request for url
+  // (http://serene-possibility.railway.internal:8080/validate)" surfaced
+  // verbatim during a validator crash loop. Keep the leading "error
+  // sending request" substring so the categorizer in step-views can
+  // route it to validation-rejected; only the URL itself is the leak.
+  sanitized = sanitized.replace(
+    /https?:\/\/[\w.-]+\.railway\.internal(?::\d+)?(?:\/[^\s)]*)?/gi,
+    "[internal]",
+  );
   // Strip stack-trace frames so multi-line errors render as a single
   // user-readable sentence rather than a wall of internal call sites.
   sanitized = sanitized.replace(/^\s+at\s.*$/gm, "");
