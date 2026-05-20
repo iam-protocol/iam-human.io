@@ -56,17 +56,37 @@ export function PulseChallenge({
     const params = randomLissajousParams();
     return generateLissajousPoints(params);
   }, []);
+
+  // Anchor positions for the lissajous curve in the 200×200 viewBox. Each
+  // entry places a 100×100 curve box. Corner anchors fill one quadrant;
+  // the middle anchor centers the curve at (100, 100). 100×100 matches
+  // the historical curve dimensions so velocity-derivative features stay
+  // at the same scale across all five anchors.
+  const lissajousAnchor = useMemo(() => {
+    const anchors = [
+      { x: 0, y: 0 },
+      { x: 100, y: 0 },
+      { x: 0, y: 100 },
+      { x: 100, y: 100 },
+      { x: 50, y: 50 },
+    ];
+    const arr = new Uint32Array(1);
+    crypto.getRandomValues(arr);
+    return { ...anchors[arr[0]! % anchors.length]!, size: 100 };
+  }, []);
+
   const svgPath = useMemo(() => {
     if (lissajousPoints.length === 0) return "";
+    const { x: ox, y: oy, size } = lissajousAnchor;
     const first = lissajousPoints[0]!;
     return (
-      `M ${first.x * 100 + 100} ${first.y * 100 + 100}` +
+      `M ${first.x * size + ox} ${first.y * size + oy}` +
       lissajousPoints
         .slice(1)
-        .map((p) => ` L ${p.x * 100 + 100} ${p.y * 100 + 100}`)
+        .map((p) => ` L ${p.x * size + ox} ${p.y * size + oy}`)
         .join("")
     );
-  }, [lissajousPoints]);
+  }, [lissajousPoints, lissajousAnchor]);
 
   // 3-second countdown before capture begins
   useEffect(() => {
